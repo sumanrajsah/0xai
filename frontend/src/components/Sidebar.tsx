@@ -1,6 +1,21 @@
 'use client'
 
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
+import { 
+  MessageSquare, 
+  History, 
+  Settings, 
+  HelpCircle, 
+  ChevronLeft, 
+  ChevronRight,
+  Plus,
+  Bot,
+  Clock
+} from 'lucide-react'
 
 interface SidebarProps {
   onNewChat: () => void
@@ -13,28 +28,35 @@ export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId }
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const sidebarItems = [
-    { icon: '💬', label: 'New Chat', action: onNewChat },
-    { icon: '📝', label: 'History', action: () => {} },
-    { icon: '⚙️', label: 'Settings', action: () => {} },
-    { icon: '❓', label: 'Help', action: () => {} },
+    { icon: MessageSquare, label: 'New Chat', action: onNewChat },
+    { icon: History, label: 'History', action: () => {} },
+    { icon: Settings, label: 'Settings', action: () => {} },
+    { icon: HelpCircle, label: 'Help', action: () => {} },
   ]
 
   return (
-    <div className={`bg-gray-900 dark:bg-gray-800 border-r border-gray-700 dark:border-gray-600 transition-all duration-300 ${
+    <div className={`bg-card border-r transition-all duration-300 ${
       isCollapsed ? 'w-16' : 'w-64'
-    } flex flex-col h-full`}>
+    } flex flex-col h-full overflow-hidden`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-700 dark:border-gray-600">
+      <div className="p-4 border-b">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <h1 className="text-xl font-bold text-white">0xAI</h1>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Bot className="h-5 w-5 text-white" />
+              </div>
+              <h1 className="text-xl font-bold">0xAI</h1>
+            </div>
           )}
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 text-gray-400 hover:text-white transition-colors duration-200"
+            className="h-8 w-8 p-0"
           >
-            {isCollapsed ? '→' : '←'}
-          </button>
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
 
@@ -42,39 +64,53 @@ export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId }
       <div className="flex-1 p-4">
         <div className="space-y-2">
           {sidebarItems.map((item, index) => (
-            <button
+            <Button
               key={index}
+              variant="ghost"
               onClick={item.action}
-              className="w-full flex items-center gap-3 p-3 text-left text-gray-300 hover:text-white hover:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 group"
+              className="w-full justify-start gap-3 h-10"
             >
-              <span className="text-lg">{item.icon}</span>
+              <item.icon className="h-4 w-4" />
               {!isCollapsed && (
                 <span className="font-medium">{item.label}</span>
               )}
-            </button>
+            </Button>
           ))}
         </div>
 
+        <Separator className="my-4" />
+
         {/* Chat History */}
         {!isCollapsed && (
-          <div className="mt-8">
-            <h3 className="text-sm font-semibold text-gray-400 mb-3">Recent Chats</h3>
-            <div className="space-y-1 max-h-64 overflow-y-auto">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-muted-foreground">Recent Chats</h3>
+              <Badge variant="secondary" className="text-xs">
+                {chats.length}
+              </Badge>
+            </div>
+            <div className="space-y-1 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
               {chats.map((chat) => (
-                <button
+                <Card
                   key={chat.id}
-                  onClick={() => onSelectChat(chat.id)}
-                  className={`w-full text-left p-2 rounded-lg transition-all duration-200 ${
+                  className={`p-3 cursor-pointer transition-all duration-200 hover:shadow-md ${
                     activeChatId === chat.id
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-700 dark:hover:bg-gray-600'
+                      ? 'bg-primary text-primary-foreground shadow-md'
+                      : 'hover:bg-muted'
                   }`}
+                  onClick={() => onSelectChat(chat.id)}
                 >
-                  <div className="text-sm font-medium truncate">{chat.title}</div>
-                  <div className="text-xs text-gray-400">
-                    {chat.timestamp.toLocaleDateString()}
+                  <div className="flex items-start gap-2">
+                    <MessageSquare className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">{chat.title}</div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                        <Clock className="h-3 w-3" />
+                        {chat.timestamp.toLocaleDateString()}
+                      </div>
+                    </div>
                   </div>
-                </button>
+                </Card>
               ))}
             </div>
           </div>
@@ -82,9 +118,9 @@ export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId }
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-700 dark:border-gray-600">
+      <div className="p-4 border-t">
         {!isCollapsed && (
-          <div className="text-xs text-gray-400 text-center">
+          <div className="text-xs text-muted-foreground text-center">
             Powered by 0xAI
           </div>
         )}

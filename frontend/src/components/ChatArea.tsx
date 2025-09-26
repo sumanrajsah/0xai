@@ -1,6 +1,12 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Send, Bot, User, Loader2 } from 'lucide-react'
 
 interface Message {
   id: string
@@ -56,58 +62,81 @@ export default function ChatArea({ messages, onSendMessage, isLoading }: ChatAre
   }, [inputValue])
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-background">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
-              <span className="text-2xl">🤖</span>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
-              Welcome to 0xAI
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 max-w-md">
-              Your AI-powered assistant for blockchain exploration and insights. 
-              Ask me anything about Web3, DeFi, or blockchain technology!
-            </p>
+            <Card className="p-8 max-w-md">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                <Bot className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">
+                Welcome to 0xAI
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                Your AI-powered assistant for blockchain exploration and insights. 
+                Ask me anything about Web3, DeFi, or blockchain technology!
+              </p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                <Badge variant="secondary">DeFi</Badge>
+                <Badge variant="secondary">Web3</Badge>
+                <Badge variant="secondary">Blockchain</Badge>
+                <Badge variant="secondary">Smart Contracts</Badge>
+              </div>
+            </Card>
           </div>
         ) : (
           messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} gap-3`}
             >
-              <div
-                className={`max-w-3xl px-4 py-3 rounded-2xl ${
+              {!message.isUser && (
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                    <Bot className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <Card
+                className={`max-w-3xl px-4 py-3 ${
                   message.isUser
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700'
+                    ? 'bg-primary text-primary-foreground ml-12'
+                    : 'bg-muted mr-12'
                 }`}
               >
                 <div className="whitespace-pre-wrap">{message.content}</div>
                 <div className={`text-xs mt-2 ${
-                  message.isUser ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
+                  message.isUser ? 'text-primary-foreground/70' : 'text-muted-foreground'
                 }`}>
                   {message.timestamp.toLocaleTimeString()}
                 </div>
-              </div>
+              </Card>
+              {message.isUser && (
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-gradient-to-r from-green-600 to-blue-600 text-white">
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
             </div>
           ))
         )}
         
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-2xl">
+          <div className="flex justify-start gap-3">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                <Bot className="h-4 w-4" />
+              </AvatarFallback>
+            </Avatar>
+            <Card className="px-4 py-3 bg-muted mr-12">
               <div className="flex items-center gap-2">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                </div>
-                <span className="text-sm text-gray-500 dark:text-gray-400">AI is thinking...</span>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm text-muted-foreground">AI is thinking...</span>
               </div>
-            </div>
+            </Card>
           </div>
         )}
         
@@ -115,28 +144,26 @@ export default function ChatArea({ messages, onSendMessage, isLoading }: ChatAre
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+      <div className="border-t p-4 flex-shrink-0">
         <form onSubmit={handleSubmit} className="flex gap-3">
           <div className="flex-1 relative">
-            <textarea
+            <Textarea
               ref={textareaRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask me anything about blockchain, DeFi, or Web3..."
-              className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
-              rows={1}
+              className="min-h-[60px] max-h-[120px] resize-none pr-12"
               disabled={isLoading}
             />
-            <button
+            <Button
               type="submit"
+              size="sm"
               disabled={!inputValue.trim() || isLoading}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="absolute right-2 top-2 h-8 w-8 p-0"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
+              <Send className="h-4 w-4" />
+            </Button>
           </div>
         </form>
       </div>
