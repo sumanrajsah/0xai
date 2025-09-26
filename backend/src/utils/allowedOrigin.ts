@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-export const allowedOrigins = [process.env.ORIGIN1, process.env.ORIGIN2, process.env.ORIGIN3, 'https://api.razorpay.com'];
+export const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
 
 export const corsHeadersMiddleware = (req: any, res: any, next: any) => {
     if (req.headers.origin && allowedOrigins.includes(req.headers.origin)) {
