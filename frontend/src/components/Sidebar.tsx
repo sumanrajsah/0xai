@@ -14,7 +14,8 @@ import {
   ChevronRight,
   Plus,
   Bot,
-  Clock
+  Clock,
+  PlusCircle
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -22,13 +23,15 @@ interface SidebarProps {
   onSelectChat: (id: string) => void
   chats: Array<{ id: string; title: string; timestamp: Date }>
   activeChatId: string | null
+  onCreateClick?: () => void
 }
 
-export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId }: SidebarProps) {
+export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId, onCreateClick }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const sidebarItems = [
     { icon: MessageSquare, label: 'New Chat', action: onNewChat },
+    { icon: PlusCircle, label: 'Create', action: onCreateClick || (() => {}) },
     { icon: History, label: 'History', action: () => {} },
     { icon: Settings, label: 'Settings', action: () => {} },
     { icon: HelpCircle, label: 'Help', action: () => {} },

@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react'
 import WalletConnectButton from '@/components/WalletConnectButton'
 import Sidebar from '@/components/Sidebar'
 import ChatArea from '@/components/ChatArea'
+import CreatePage from '@/components/CreatePage'
+import AIAgentPage from '@/components/AIAgentPage'
+import MCPToolsPage from '@/components/MCPToolsPage'
+import AddMCPServerPage from '@/components/AddMCPServerPage'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { MessageSquare } from 'lucide-react'
@@ -22,10 +26,13 @@ interface Chat {
   timestamp: Date
 }
 
+type Page = 'dashboard' | 'create' | 'ai-agent' | 'mcp-tools' | 'add-mcp-server'
+
 export default function Dashboard() {
   const [chats, setChats] = useState<Chat[]>([])
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState<Page>('dashboard')
 
   const currentChat = chats.find(chat => chat.id === activeChatId)
   const messages = currentChat?.messages || []
@@ -39,10 +46,12 @@ export default function Dashboard() {
     }
     setChats(prev => [newChat, ...prev])
     setActiveChatId(newChat.id)
+    setCurrentPage('dashboard')
   }
 
   const selectChat = (chatId: string) => {
     setActiveChatId(chatId)
+    setCurrentPage('dashboard')
   }
 
   const sendMessage = async (content: string) => {
@@ -97,6 +106,77 @@ export default function Dashboard() {
     }
   }, [])
 
+  // Handle navigation
+  const handleCreateClick = () => {
+    setCurrentPage('create')
+  }
+
+  const handleAIAgentClick = () => {
+    setCurrentPage('ai-agent')
+  }
+
+  const handleMCPToolsClick = () => {
+    setCurrentPage('mcp-tools')
+  }
+
+  const handleAddMCPClick = () => {
+    setCurrentPage('add-mcp-server')
+  }
+
+  const handleBackToDashboard = () => {
+    setCurrentPage('dashboard')
+  }
+
+  const handleBackToCreate = () => {
+    setCurrentPage('create')
+  }
+
+  const handleBackToMCPTools = () => {
+    setCurrentPage('mcp-tools')
+  }
+
+  const handleAskInChat = () => {
+    setCurrentPage('dashboard')
+  }
+
+  // Render different pages based on current page
+  if (currentPage === 'create') {
+    return (
+      <CreatePage
+        onBack={handleBackToDashboard}
+        onSelectAIAgent={handleAIAgentClick}
+        onSelectMCPTools={handleMCPToolsClick}
+      />
+    )
+  }
+
+  if (currentPage === 'ai-agent') {
+    return (
+      <AIAgentPage
+        onBack={handleBackToCreate}
+        onAskInChat={handleAskInChat}
+      />
+    )
+  }
+
+  if (currentPage === 'mcp-tools') {
+    return (
+      <MCPToolsPage
+        onBack={handleBackToCreate}
+        onAddMCP={handleAddMCPClick}
+      />
+    )
+  }
+
+  if (currentPage === 'add-mcp-server') {
+    return (
+      <AddMCPServerPage
+        onBack={handleBackToMCPTools}
+      />
+    )
+  }
+
+  // Default dashboard view
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Sidebar */}
@@ -105,6 +185,7 @@ export default function Dashboard() {
         onSelectChat={selectChat}
         chats={chats}
         activeChatId={activeChatId}
+        onCreateClick={handleCreateClick}
       />
 
       {/* Main Content */}
