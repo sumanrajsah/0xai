@@ -1,0 +1,44 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log
+
+# Build output
+dist/
+build/
+.next/
+out/
+.vercel/
+*.tsbuildinfo
+
+# Env files
+.env
+.env.*.local
+
+# Logs
+logs
+*.log
+*.log.*
+debug.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+
+# Cache
+.cache/
+.next/cache/
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*.swo
