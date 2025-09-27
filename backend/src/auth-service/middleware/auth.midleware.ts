@@ -13,11 +13,8 @@ export const authenticate = (
     res: Response,
     next: NextFunction
 ): void => {
-    const origin = req.headers.origin;
-    const authHeader = req.headers.authorization;
-
     const token =
-        req.cookies.aum_ai_token
+        req.cookies.token
 
     if (token) {
         try {

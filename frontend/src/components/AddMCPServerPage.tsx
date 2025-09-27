@@ -17,6 +17,8 @@ import {
   X
 } from 'lucide-react'
 import { MCP } from '@/lib/mcp'
+import axios from 'axios'
+import { useAuth } from '@/hooks/useAuth'
 
 interface AddMCPServerPageProps {
   onBack: () => void
@@ -37,6 +39,7 @@ interface McpServer {
 
 
 export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<McpServer>({
     label: '',
     description: '',
@@ -111,9 +114,52 @@ export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
   };
 
 
-  const handleSave = () => {
-    // Handle save logic
-    console.log('Saving MCP Server:', formData)
+  const handleSave = async () => {
+    if (!formData.label?.trim() || !formData.uri?.trim()) {
+
+      return;
+    }
+
+    if (!user?.uid) {
+      alert("User not authenticated");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URI}/v1/mcp/save`,
+        {
+          servers: formData,
+          uid: user.uid
+        },
+        {
+          withCredentials: true
+        }
+      );
+
+
+      if (response.status === 200) {
+        if (response.data.message === 'success') {
+
+          // Reset form after successful save
+          setFormData({
+            label: "",
+            description: "",
+            auth: false,
+            uri: "",
+            header: {
+              key: '',
+              value: ''
+            },
+            type: "http",
+            tools: []
+          });
+        }
+      }
+    } catch (e) {
+      console.error(e);
+
+    }
   }
 
   return (

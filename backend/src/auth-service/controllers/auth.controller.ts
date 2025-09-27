@@ -14,7 +14,7 @@ function setAuthCookie(res: Response, token: string) {
         maxAge: 60 * 60 * 1000 * 24 * 30, // 30 days
         // secure: process.env.NODE_ENV === 'production',
     };
-    res.cookie('0xai_token', token, cookieOpts);
+    res.cookie('token', token, cookieOpts);
 
 }
 export const Account = async (req: Request, res: Response) => {
@@ -33,6 +33,7 @@ export const Account = async (req: Request, res: Response) => {
                 process.env.JWT_SECRET!,
                 { expiresIn: '7d' }
             );
+            setAuthCookie(res, token)
             return res.status(201).json({ message: 'User already exists', token, user: { uid: user.uid, address: user.address } });
         } else {
             const newUser = {
@@ -68,7 +69,7 @@ export const Account = async (req: Request, res: Response) => {
 };
 export const logout = async (req: Request, res: Response): Promise<void> => {
     try {
-        res.clearCookie('0xai_token', {
+        res.clearCookie('token', {
             httpOnly: true,
             // secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
@@ -92,7 +93,6 @@ export const authMe = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'User not found' });
         }
         delete user.signature; // Remove sensitive info
-        console.log('Authenticated user:', user);
         return res.status(200).json({ user });
     }).catch((err: any) => {
         console.error('Error fetching user:', err);
