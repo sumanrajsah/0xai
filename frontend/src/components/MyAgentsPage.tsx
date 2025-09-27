@@ -114,7 +114,7 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'rating'>('recent')
-  
+
   // Publishing functionality
   const [selectedAgent, setSelectedAgent] = useState<AIAgent | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -213,7 +213,7 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
+
       // Update agent with new tags and categories
       const updatedAgent = {
         ...selectedAgent,
@@ -221,15 +221,15 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
         category: selectedCategories[0], // Use first category as primary
         isPublic: true
       }
-      
+
       setAgents(agents.map(agent => agent.id === selectedAgent.id ? updatedAgent : agent))
-      
+
       // Reset form
       setSelectedAgent(null)
       setSelectedTags([])
       setSelectedCategories([])
       setShowPublishForm(false)
-      
+
       console.log('Agent published successfully:', updatedAgent)
     } catch (error) {
       console.error('Failed to publish agent:', error)
@@ -276,7 +276,7 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
               <h1 className="text-2xl font-bold">My Agents</h1>
             </div>
           </div>
-         
+
         </div>
       </header>
 
@@ -343,23 +343,22 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
               </div>
               <h3 className="text-lg font-semibold mb-2">No agents found</h3>
               <p className="text-muted-foreground mb-4">
-                {searchQuery || selectedCategory !== 'All' 
+                {searchQuery || selectedCategory !== 'All'
                   ? 'Try adjusting your search or filter criteria'
                   : 'You haven\'t created any agents yet'
                 }
               </p>
             </Card>
           ) : (
-            <div className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' 
+            <div className={viewMode === 'grid'
+              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
               : 'space-y-4'
             }>
               {filteredAgents.map((agent) => (
-                <Card 
-                  key={agent.id} 
-                  className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
-                    viewMode === 'list' ? 'flex' : ''
-                  }`}
+                <Card
+                  key={agent.id}
+                  className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${viewMode === 'list' ? 'flex' : ''
+                    }`}
                   onClick={() => handleAgentClick(agent)}
                 >
                   <CardHeader className={viewMode === 'list' ? 'flex-1' : ''}>
@@ -387,7 +386,7 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className={viewMode === 'list' ? 'flex-1' : ''}>
                     <CardDescription className="mb-4 line-clamp-2">
                       {agent.description}
@@ -442,8 +441,8 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
                         <Play className="h-4 w-4" />
                         Start Chat
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -478,9 +477,9 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
                   </div>
                   <CardTitle>Publish Agent</CardTitle>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setShowPublishForm(false)}
                 >
                   <X className="h-4 w-4" />
@@ -490,7 +489,7 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
                 Make your agent public and discoverable by the community
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-6">
               {/* Selected Agent Info */}
               <div className="p-4 bg-muted/50 rounded-lg">
@@ -519,8 +518,8 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
                     className="flex-1"
                     disabled={selectedTags.length >= 3}
                   />
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={handleAddTag}
                     disabled={!tagInput.trim() || selectedTags.length >= 3}
                   >
@@ -531,8 +530,8 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
                   {selectedTags.map((tag) => (
                     <Badge key={tag} variant="secondary" className="gap-1">
                       {tag}
-                      <X 
-                        className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
                         onClick={() => handleRemoveTag(tag)}
                       />
                     </Badge>
@@ -565,14 +564,14 @@ export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
 
               {/* Publish Button */}
               <div className="flex gap-3 pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setShowPublishForm(false)}
                   className="flex-1"
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   onClick={handlePublish}
                   disabled={selectedTags.length === 0 || selectedCategories.length === 0 || isPublishing}
                   className="flex-1 gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"

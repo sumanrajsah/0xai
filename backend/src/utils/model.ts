@@ -5,14 +5,6 @@ import { convertToOpenAIFormat } from "./response";
 type ModelName = "gpt-4o-mini" | "gpt-4o";
 
 
-export const llmModels = ['gpt-5-nano', 'gpt-4.1-nano', 'mistral-small-2503', 'ministral-3b', 'grok-3-mini', 'mistral-nemo', 'phi-4-mini-reasoning', 'gpt-4o-mini'];
-
-export function isModelAvailable(modelValue: string): boolean {
-    return llmModels.includes(modelValue);
-}
-
-
-
 export async function getAiModels(modelName: ModelName, messages: Array<{ role: "system" | "user" | "assistant" | "tool"; content?: MessageContentItem[]; name?: string; tool_calls?: any[]; tool_call_id?: string }>, tools: any[], temperature: any, top_p: any, frequency_penalty: any, presence_penalty: any, supportsMedia: boolean) {
     const apiKey1 = process.env.AZURE_OPENAI_API_KEY;
     const apiKey2 = process.env.AZURE_OPENAI_API_KEY2;

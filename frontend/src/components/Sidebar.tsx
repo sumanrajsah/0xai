@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { 
-  MessageSquare, 
-  History, 
-  Settings, 
-  HelpCircle, 
-  ChevronLeft, 
+import {
+  MessageSquare,
+  History,
+  Settings,
+  HelpCircle,
+  ChevronLeft,
   ChevronRight,
   Plus,
   Bot,
@@ -33,18 +33,13 @@ export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId, 
 
   const sidebarItems = [
     { icon: MessageSquare, label: 'New Chat', action: onNewChat },
-    { icon: BotIcon, label: 'AI Agents', action: onAIAgentsClick || (() => {}) },
-    { icon: PlusCircle, label: 'Create', action: onCreateClick || (() => {}) },
-
-    { icon: History, label: 'History', action: () => {} },
-    { icon: Settings, label: 'Settings', action: () => {} },
-    { icon: HelpCircle, label: 'Help', action: () => {} },
+    { icon: BotIcon, label: 'AI Agents', action: onAIAgentsClick || (() => { }) },
+    { icon: PlusCircle, label: 'Create', action: onCreateClick || (() => { }) },
   ]
 
   return (
-    <div className={`bg-card border-r transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-64'
-    } flex flex-col h-full overflow-hidden`}>
+    <div className={`bg-card border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'
+      } flex flex-col h-full overflow-hidden`}>
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between">
@@ -100,11 +95,10 @@ export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId, 
               {chats.map((chat) => (
                 <Card
                   key={chat.id}
-                  className={`p-3 cursor-pointer transition-all duration-200 hover:shadow-md ${
-                    activeChatId === chat.id
+                  className={`p-3 cursor-pointer transition-all duration-200 hover:shadow-md ${activeChatId === chat.id
                       ? 'bg-primary text-primary-foreground shadow-md'
                       : 'hover:bg-muted'
-                  }`}
+                    }`}
                   onClick={() => onSelectChat(chat.id)}
                 >
                   <div className="flex items-start gap-2">

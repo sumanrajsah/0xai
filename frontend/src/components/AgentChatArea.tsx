@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Send, Bot, User, Loader2, ChevronDown, Settings, Plus, Image, FileText, X, Wrench, Globe } from 'lucide-react'
+import { Send, Bot, User, Loader2, ChevronDown, Settings, Plus, Image, FileText, X, Wrench, Globe, Star, Zap } from 'lucide-react'
 import axios from 'axios'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -63,7 +63,26 @@ interface Attachment {
   preview?: string
 }
 
-interface ChatAreaProps {
+interface AIAgent {
+  id: string
+  name: string
+  handle: string
+  description: string
+  avatar?: string
+  category: string
+  tags: string[]
+  status: 'active' | 'inactive' | 'training'
+  model: string
+  conversations: number
+  rating: number
+  createdAt: Date
+  lastUsed?: Date
+  tools: string[]
+  isPublic: boolean
+  isVerified: boolean
+}
+
+interface AgentChatAreaProps {
   messages: Message[]
   onSendMessage: (chatRequest: ChatRequest) => void
   isLoading: boolean
@@ -76,9 +95,10 @@ interface ChatAreaProps {
   onMCPChange?: (mcp: string) => void
   onAIToolChange?: (tool: string) => void
   onLanguageChange?: (language: string) => void
+  agent: AIAgent
 }
 
-export default function ChatArea({
+export default function AgentChatArea({
   messages,
   onSendMessage,
   isLoading,
@@ -90,13 +110,11 @@ export default function ChatArea({
   onModelChange,
   onMCPChange,
   onAIToolChange,
-  onLanguageChange
-}: ChatAreaProps) {
+  onLanguageChange,
+  agent
+}: AgentChatAreaProps) {
   const { user, status } = useAuth();
   const [inputValue, setInputValue] = useState('')
-  const [showModelDropdown, setShowModelDropdown] = useState(false)
-  const [showMCPDropdown, setShowMCPDropdown] = useState(false)
-  const [showAIToolDropdown, setShowAIToolDropdown] = useState(false)
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [showUploadMenu, setShowUploadMenu] = useState(false)
@@ -117,47 +135,22 @@ export default function ChatArea({
       }
 
       try {
-        const serverResult = await axios.get(`${process.env.NEXT_PUBLIC_API_URI}/v1/mcp?uid=${user.uid}`, { withCredentials: true })
-
-          ;
-        // //console.log(userResult, serverResult)
-        // Handle workspace result
-
-        // Handle server result independently
+        const serverResult = await axios.get(`${process.env.NEXT_PUBLIC_API_URI}/v1/mcp?uid=${user.uid}`, { withCredentials: true });
 
         const serverResponse = serverResult;
         if (serverResponse.status === 200) {
           if (mcpServers.length !== serverResponse.data.data)
             setMcpServers(serverResponse.data.data);
         } else {
-          // console.warn("Server data invalid or not found:", serverResponse);
           setMcpServers([]);
         }
       } catch (err) {
         // console.error("Unexpected error occurred:", err);
       }
-
     }
 
     if (user) getData();
   }, [user, status])
-
-  const aiModels = [
-    { value: 'gpt-4o', label: 'GPT-4o', description: 'Fast and efficient' },
-    { value: 'gpt-4.1', label: 'GPT-4.1', description: 'Fast and efficient' },
-    { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini', description: 'Fast and efficient' },
-    { value: 'gpt-5', label: 'GPT-5', description: 'Fast and efficient' },
-    { value: 'gpt-5-nano', label: 'GPT-5 Nano', description: 'Fast and efficient' },
-    { value: 'gpt-5-mini', label: 'GPT-5 Mini', description: 'Fast and efficient' },
-    { value: 'gpt-oss-120b', label: 'GPT-OSS-120B', description: 'Fast and efficient' },
-  ]
-
-
-
-  const aiTools = [
-    { value: 'none', label: 'No AI Tools', description: 'Basic chat only' },
-    { value: 'web_search', label: 'Web Search', description: 'Search the web for information' },
-  ]
 
   const languages = [
     { value: 'english', label: 'English', description: 'Default language' },
@@ -221,8 +214,8 @@ export default function ChatArea({
         })
       }
 
-      // Prepare tools array - just pass the selected tool values
-      const tools = selectedAITool !== 'none' ? [selectedAITool] : []
+      // Prepare tools array - include agent's tools
+      const tools = selectedAITool !== 'none' ? [selectedAITool, ...agent.tools] : agent.tools
 
       const chatRequest: ChatRequest = {
         chat_id: chatId,
@@ -237,7 +230,7 @@ export default function ChatArea({
           presence_penalty: 0,
           supportsMedia: true,
           ...(tools.length > 0 && { tools }),
-          mcp_server: selectedMCP !== 'none' ? [{ sid: selectedMCP }] : [],
+          mcp_server: selectedMCP !== 'none' ? [{ sid: "mcp_01998a6d-abec-7298-9158-7c7a5dba2db6" }] : [],
           mcp_tools: tools
         }
       }
@@ -298,9 +291,6 @@ export default function ChatArea({
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element
       if (!target.closest('[data-dropdown]') && !target.closest('[data-upload-menu]')) {
-        setShowModelDropdown(false)
-        setShowMCPDropdown(false)
-        setShowAIToolDropdown(false)
         setShowLanguageDropdown(false)
         setShowUploadMenu(false)
       }
@@ -322,17 +312,25 @@ export default function ChatArea({
                 <Bot className="h-8 w-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold mb-2">
-                Welcome to 0xAI
+                Chat with {agent.name}
               </h2>
               <p className="text-muted-foreground mb-4">
-                Your AI-powered assistant for blockchain exploration and insights.
-                Ask me anything about Web3, DeFi, or blockchain technology!
+                {agent.description}
               </p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                <Badge variant="secondary">DeFi</Badge>
-                <Badge variant="secondary">Web3</Badge>
-                <Badge variant="secondary">Blockchain</Badge>
-                <Badge variant="secondary">Smart Contracts</Badge>
+              <div className="flex flex-wrap gap-2 justify-center mb-4">
+                {agent.tags.slice(0, 4).map((tag) => (
+                  <Badge key={tag} variant="secondary">{tag}</Badge>
+                ))}
+              </div>
+              <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4" />
+                  <span>{agent.rating}/5.0</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Zap className="h-4 w-4" />
+                  <span>{agent.tools.length} tools</span>
+                </div>
               </div>
             </Card>
           </div>
@@ -382,7 +380,7 @@ export default function ChatArea({
             <Card className="px-4 py-3 bg-muted mr-12">
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm text-muted-foreground">AI is thinking...</span>
+                <span className="text-sm text-muted-foreground">{agent.name} is thinking...</span>
               </div>
             </Card>
           </div>
@@ -399,199 +397,7 @@ export default function ChatArea({
           <div className="p-3 pb-2">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
               {/* AI Model Dropdown */}
-              <div className="relative" data-dropdown>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setShowModelDropdown(!showModelDropdown)
-                    setShowMCPDropdown(false)
-                    setShowAIToolDropdown(false)
-                    setShowLanguageDropdown(false)
-                    setShowUploadMenu(false)
-                  }}
-                  className="gap-1.5 w-full justify-between h-8 bg-muted/30 hover:bg-muted/50 border border-border/30 hover:border-primary/40 transition-all duration-200 rounded-lg text-xs"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-green-400 to-blue-500"></div>
-                    <span className="truncate font-medium">
-                      {aiModels.find(m => m.value === selectedModel)?.label || 'Model'}
-                    </span>
-                  </div>
-                  <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showModelDropdown ? 'rotate-180' : ''}`} />
-                </Button>
-                {showModelDropdown && (
-                  <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
-                    <div className="p-3">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-                          <Bot className="h-3 w-3 text-white" />
-                        </div>
-                        <div className="text-xs font-bold text-foreground">AI Models</div>
-                      </div>
-                      <div className="space-y-1">
-                        {aiModels.map((model) => (
-                          <div
-                            key={model.value}
-                            onClick={() => {
-                              onModelChange?.(model.value)
-                              setShowModelDropdown(false)
-                            }}
-                            className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${selectedModel === model.value
-                              ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]'
-                              : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
-                              }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="font-semibold text-sm">{model.label}</div>
-                                <div className={`text-xs mt-1 ${selectedModel === model.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-                                  {model.description}
-                                </div>
-                              </div>
-                              {selectedModel === model.value && (
-                                <div className="w-4 h-4 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
 
-              {/* MCP Tools Dropdown */}
-              <div className="relative" data-dropdown>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setShowMCPDropdown(!showMCPDropdown)
-                    setShowModelDropdown(false)
-                    setShowAIToolDropdown(false)
-                    setShowLanguageDropdown(false)
-                    setShowUploadMenu(false)
-                  }}
-                  className="gap-1.5 w-full justify-between h-8 bg-muted/30 hover:bg-muted/50 border border-border/30 hover:border-primary/40 transition-all duration-200 rounded-lg text-xs"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-orange-400 to-red-500"></div>
-                    <span className="truncate font-medium">
-                      {mcpServers.find(m => m.sid === selectedMCP)?.label || 'MCP'}
-                    </span>
-                  </div>
-                  <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showMCPDropdown ? 'rotate-180' : ''}`} />
-                </Button>
-                {showMCPDropdown && (
-                  <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
-                    <div className="p-3">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-orange-600 to-red-600 flex items-center justify-center">
-                          <Settings className="h-3 w-3 text-white" />
-                        </div>
-                        <div className="text-xs font-bold text-foreground">MCP Tools</div>
-                      </div>
-                      <div className="space-y-1">
-                        {mcpServers.map((mcp) => (
-                          <div
-                            key={mcp.sid}
-                            onClick={() => {
-                              onMCPChange?.(mcp.sid)
-                              setShowMCPDropdown(false)
-                            }}
-                            className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${selectedMCP === mcp.sid
-                              ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]'
-                              : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
-                              }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="font-semibold text-sm">{mcp.label}</div>
-                                <div className={`text-xs mt-1 ${selectedMCP === mcp.sid ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-                                  {mcp.description}
-                                </div>
-                              </div>
-                              {selectedMCP === mcp.sid && (
-                                <div className="w-4 h-4 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* AI Tools Dropdown */}
-              <div className="relative" data-dropdown>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setShowAIToolDropdown(!showAIToolDropdown)
-                    setShowModelDropdown(false)
-                    setShowMCPDropdown(false)
-                    setShowLanguageDropdown(false)
-                    setShowUploadMenu(false)
-                  }}
-                  className="gap-1.5 w-full justify-between h-8 bg-muted/30 hover:bg-muted/50 border border-border/30 hover:border-primary/40 transition-all duration-200 rounded-lg text-xs"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-purple-400 to-pink-500"></div>
-                    <span className="truncate font-medium">
-                      {aiTools.find(t => t.value === selectedAITool)?.label || 'AI Tool'}
-                    </span>
-                  </div>
-                  <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showAIToolDropdown ? 'rotate-180' : ''}`} />
-                </Button>
-                {showAIToolDropdown && (
-                  <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
-                    <div className="p-3">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
-                          <Wrench className="h-3 w-3 text-white" />
-                        </div>
-                        <div className="text-xs font-bold text-foreground">AI Tools</div>
-                      </div>
-                      <div className="space-y-1">
-                        {aiTools.map((tool) => (
-                          <div
-                            key={tool.value}
-                            onClick={() => {
-                              onAIToolChange?.(tool.value)
-                              setShowAIToolDropdown(false)
-                            }}
-                            className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${selectedAITool === tool.value
-                              ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]'
-                              : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
-                              }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="font-semibold text-sm">{tool.label}</div>
-                                <div className={`text-xs mt-1 ${selectedAITool === tool.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-                                  {tool.description}
-                                </div>
-                              </div>
-                              {selectedAITool === tool.value && (
-                                <div className="w-4 h-4 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
 
               {/* Languages Dropdown */}
               <div className="relative" data-dropdown>
@@ -600,9 +406,6 @@ export default function ChatArea({
                   size="sm"
                   onClick={() => {
                     setShowLanguageDropdown(!showLanguageDropdown)
-                    setShowModelDropdown(false)
-                    setShowMCPDropdown(false)
-                    setShowAIToolDropdown(false)
                     setShowUploadMenu(false)
                   }}
                   className="gap-1.5 w-full justify-between h-8 bg-muted/30 hover:bg-muted/50 border border-border/30 hover:border-primary/40 transition-all duration-200 rounded-lg text-xs"
@@ -704,9 +507,6 @@ export default function ChatArea({
                 variant="outline"
                 onClick={() => {
                   setShowUploadMenu(!showUploadMenu)
-                  setShowModelDropdown(false)
-                  setShowMCPDropdown(false)
-                  setShowAIToolDropdown(false)
                   setShowLanguageDropdown(false)
                 }}
                 className="h-12 w-12 p-0 hover:bg-primary/10 hover:border-primary/30 transition-all duration-200 rounded-xl border-2 bg-background/50 backdrop-blur-sm"
@@ -755,7 +555,7 @@ export default function ChatArea({
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask me anything about blockchain, DeFi, or Web3..."
+                placeholder={`Ask ${agent.name} anything...`}
                 className="min-h-[60px] max-h-[120px] resize-none pr-14 pl-4 py-4 bg-transparent border-0 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/70 text-foreground"
                 disabled={isLoading}
               />
@@ -786,4 +586,3 @@ export default function ChatArea({
     </div>
   )
 }
-

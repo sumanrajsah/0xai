@@ -11,6 +11,7 @@ import AIAgentsListPage from '@/components/AIAgentsListPage'
 import MyAgentsPage from '@/components/MyAgentsPage'
 import MCPToolsPage from '@/components/MCPToolsPage'
 import AddMCPServerPage from '@/components/AddMCPServerPage'
+import AgentChatPage from '@/components/AgentChatPage'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -68,7 +69,26 @@ interface Chat {
   timestamp: Date
 }
 
-type Page = 'dashboard' | 'create' | 'ai-agent' | 'ai-agents-list' | 'my-agents' | 'mcp-tools' | 'add-mcp-server'
+interface AIAgent {
+  id: string
+  name: string
+  handle: string
+  description: string
+  avatar?: string
+  category: string
+  tags: string[]
+  status: 'active' | 'inactive' | 'training'
+  model: string
+  conversations: number
+  rating: number
+  createdAt: Date
+  lastUsed?: Date
+  tools: string[]
+  isPublic: boolean
+  isVerified: boolean
+}
+
+type Page = 'dashboard' | 'create' | 'ai-agent' | 'ai-agents-list' | 'my-agents' | 'mcp-tools' | 'add-mcp-server' | 'agent-chat'
 
 export default function Dashboard() {
   const [chats, setChats] = useState<Chat[]>([])
@@ -77,6 +97,7 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
   const [selectedModel, setSelectedModel] = useState('gpt-4o-mini')
   const [selectedMCP, setSelectedMCP] = useState('none')
+  const [selectedAgent, setSelectedAgent] = useState<AIAgent | null>(null)
 
   const currentChat = chats.find(chat => chat.id === activeChatId)
   const messages = currentChat?.messages || []
@@ -261,6 +282,16 @@ export default function Dashboard() {
     setCurrentPage('my-agents')
   }
 
+  const handleStartAgentChat = (agent: AIAgent) => {
+    setSelectedAgent(agent)
+    setCurrentPage('agent-chat')
+  }
+
+  const handleBackFromAgentChat = () => {
+    setSelectedAgent(null)
+    setCurrentPage('ai-agents-list')
+  }
+
   // Render different pages based on current page
   if (currentPage === 'create') {
     return (
@@ -286,6 +317,7 @@ export default function Dashboard() {
       <AIAgentsListPage
         onBack={handleBackToDashboard}
         onCreateAgent={handleCreateAgent}
+        onStartChat={handleStartAgentChat}
       />
     )
   }
@@ -311,6 +343,15 @@ export default function Dashboard() {
     return (
       <MyAgentsPage
         onBack={handleBackToDashboard}
+      />
+    )
+  }
+
+  if (currentPage === 'agent-chat' && selectedAgent) {
+    return (
+      <AgentChatPage
+        agent={selectedAgent}
+        onBack={handleBackFromAgentChat}
       />
     )
   }
