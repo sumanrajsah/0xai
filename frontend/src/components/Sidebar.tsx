@@ -36,9 +36,9 @@ export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId, 
     { icon: BotIcon, label: 'AI Agents', action: onAIAgentsClick || (() => {}) },
     { icon: PlusCircle, label: 'Create', action: onCreateClick || (() => {}) },
 
-    { icon: History, label: 'History', action: () => {} },
-    { icon: Settings, label: 'Settings', action: () => {} },
-    { icon: HelpCircle, label: 'Help', action: () => {} },
+    // { icon: History, label: 'History', action: () => {} },
+    // { icon: Settings, label: 'Settings', action: () => {} },
+    // { icon: HelpCircle, label: 'Help', action: () => {} },
   ]
 
   return (
