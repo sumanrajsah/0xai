@@ -7,11 +7,11 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Wallet, LogOut, Copy, Check } from 'lucide-react'
 import { useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function WalletConnectButton() {
   const { isConnected, address } = useAccount()
-  const { open } = useAppKit()
-  const { disconnect } = useDisconnect()
+  const { ConnectWallet, Logout } = useAuth()
   const [copied, setCopied] = useState(false)
 
   const formatAddress = (addr: string) => {
@@ -54,7 +54,7 @@ export default function WalletConnectButton() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => disconnect()}
+          onClick={Logout}
           className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
         >
           <LogOut className="h-4 w-4 mr-2" />
@@ -66,7 +66,7 @@ export default function WalletConnectButton() {
 
   return (
     <Button
-      onClick={() => open()}
+      onClick={ConnectWallet}
       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
     >
       <Wallet className="h-4 w-4 mr-2" />

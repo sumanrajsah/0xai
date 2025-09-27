@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"tsx watch src/gateway/index.ts\" \"tsx watch src/auth-service/index.ts\""
+    "dev": "concurrently \"tsx watch src/gateway/index.ts\" \"tsx watch src/auth-service/index.ts\" \"tsx watch src/mcp-service/index.ts\""
   },
   "keywords": [],
   "author": "",

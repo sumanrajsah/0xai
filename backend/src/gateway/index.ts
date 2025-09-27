@@ -59,6 +59,12 @@ app.use(
         [`^/${baseVersion}/auth`]: `/${baseVersion}/auth`,
     }))
 );
+app.use(
+    `/${baseVersion}/mcp`,
+    createProxyMiddleware(standardProxyOptions('http://localhost:4002', {
+        [`^/${baseVersion}/mcp`]: `/${baseVersion}/mcp`,
+    }))
+);
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'healthy' });
 });

@@ -33,7 +33,7 @@ export const Account = async (req: Request, res: Response) => {
                 process.env.JWT_SECRET!,
                 { expiresIn: '7d' }
             );
-            return res.status(201).json({ message: 'User already exists', token });
+            return res.status(201).json({ message: 'User already exists', token, user: { uid: user.uid, address: user.address } });
         } else {
             const newUser = {
                 address: data.address.toLowerCase(),
@@ -61,7 +61,7 @@ export const Account = async (req: Request, res: Response) => {
 
 
                 setAuthCookie(res, token)
-                return res.status(201).json({ message: 'User created successfully', token });
+                return res.status(201).json({ message: 'User created successfully', token, user: { uid: newUser.uid, address: newUser.address } });
             });
         }
     });
@@ -92,6 +92,7 @@ export const authMe = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'User not found' });
         }
         delete user.signature; // Remove sensitive info
+        console.log('Authenticated user:', user);
         return res.status(200).json({ user });
     }).catch((err: any) => {
         console.error('Error fetching user:', err);

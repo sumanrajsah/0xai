@@ -6,42 +6,110 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { 
-  ArrowLeft, 
-  Server, 
-  CheckCircle, 
+import {
+  ArrowLeft,
+  Server,
+  CheckCircle,
   AlertCircle,
   Save,
-  TestTube
+  TestTube,
+  Plus,
+  X
 } from 'lucide-react'
+import { MCP } from '@/lib/mcp'
 
 interface AddMCPServerPageProps {
   onBack: () => void
 }
 
+interface McpServer {
+  label: string;
+  description: string;
+  uri: string;
+  type: string;
+  auth: boolean;
+  header?: {
+    key: string;
+    value: string;
+  },
+  tools: string[];
+}
+
+
 export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
-  const [formData, setFormData] = useState({
-    serverLabel: 'SitrAi',
-    serverDescription: 'Short description',
-    connectionType: 'Streamable HTTP',
-    uri: 'https://mcp.sitrai.com/mcp',
-    authentication: 'No'
+  const [formData, setFormData] = useState<McpServer>({
+    label: '',
+    description: '',
+    uri: '',
+    type: 'http',
+    auth: false,
+    header: {
+      key: '',
+      value: ''
+    },
+    tools: []
   })
   const [isVerifying, setIsVerifying] = useState(false)
   const [verificationStatus, setVerificationStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [newTool, setNewTool] = useState('')
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof McpServer, value: string | boolean | { key: string; value: string } | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleVerify = async () => {
-    setIsVerifying(true)
-    // Simulate verification process
-    setTimeout(() => {
-      setIsVerifying(false)
-      setVerificationStatus('success')
-    }, 2000)
-  }
+  const updateServer = (field: keyof McpServer | "header.key" | "header.value", value: any) => {
+    if (field === "header.key") {
+      setFormData(prev => ({
+        ...prev,
+        header: {
+          key: value,
+          value: prev.header?.value ?? ''
+        }
+      }));
+    } else if (field === "header.value") {
+      setFormData(prev => ({
+        ...prev,
+        header: {
+          key: prev.header?.key ?? '',
+          value: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
+  };
+  const CheckConnection = async (serverInfo: McpServer) => {
+    if (!serverInfo.uri || !serverInfo.label) {
+
+      return;
+    }
+
+    setIsVerifying(true);
+    try {
+      const server =
+      {
+        uri: serverInfo.uri,
+        header: {
+          key: serverInfo.header?.key ?? '',
+          value: serverInfo.header?.value ?? ''
+        },
+        type: serverInfo.type
+      }
+      const response = await MCP(server);
+      if (response.mcpClient !== null) {
+        console.log(response.tools)
+        updateServer('tools', response.tools.map(item => item.function.name))
+      } else {
+
+      }
+    } catch (e) {
+
+      console.error(e);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
 
   const handleSave = () => {
     // Handle save logic
@@ -64,7 +132,7 @@ export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleVerify} disabled={isVerifying} className="gap-2">
+            <Button variant="outline" onClick={() => CheckConnection(formData)} disabled={isVerifying} className="gap-2">
               {isVerifying ? (
                 <>
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -77,7 +145,7 @@ export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
                 </>
               )}
             </Button>
-            <Button onClick={handleSave} className="gap-2">
+            <Button onClick={handleSave} disabled={formData.tools.length === 0} className="gap-2">
               <Save className="h-4 w-4" />
               Save
             </Button>
@@ -97,18 +165,18 @@ export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Server Label *</label>
-                <Input 
-                  value={formData.serverLabel}
-                  onChange={(e) => handleInputChange('serverLabel', e.target.value)}
+                <Input
+                  value={formData.label}
+                  onChange={(e) => handleInputChange('label', e.target.value)}
                   placeholder="Enter server label"
                 />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Server Description</label>
-                <Textarea 
-                  value={formData.serverDescription}
-                  onChange={(e) => handleInputChange('serverDescription', e.target.value)}
+                <Textarea
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
                   placeholder="Enter server description"
                   rows={3}
                 />
@@ -116,21 +184,19 @@ export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Connection Type *</label>
-                <select 
-                  value={formData.connectionType}
-                  onChange={(e) => handleInputChange('connectionType', e.target.value)}
+                <select
+                  value={formData.type}
+                  onChange={(e) => handleInputChange('type', e.target.value)}
                   className="w-full p-2 border border-input rounded-md bg-background"
                 >
-                  <option value="Streamable HTTP">Streamable HTTP</option>
-                  <option value="WebSocket">WebSocket</option>
-                  <option value="gRPC">gRPC</option>
-                  <option value="TCP">TCP</option>
+                  <option value="http">HTTP</option>
+                  <option value="sse">SSE</option>
                 </select>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">URI *</label>
-                <Input 
+                <Input
                   value={formData.uri}
                   onChange={(e) => handleInputChange('uri', e.target.value)}
                   placeholder="https://mcp.example.com/mcp"
@@ -139,20 +205,47 @@ export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Authentication</label>
-                <select 
-                  value={formData.authentication}
-                  onChange={(e) => handleInputChange('authentication', e.target.value)}
+                <select
+                  value={formData.auth.toString()}
+                  onChange={(e) => handleInputChange('auth', e.target.value === 'true')}
                   className="w-full p-2 border border-input rounded-md bg-background"
                 >
-                  <option value="No">No</option>
-                  <option value="API Key">API Key</option>
-                  <option value="OAuth">OAuth</option>
-                  <option value="JWT">JWT</option>
-                  <option value="Basic Auth">Basic Auth</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
                 </select>
               </div>
+
+              {formData.auth && (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Header Name *</label>
+                    <Input
+                      value={formData.header?.key || ''}
+                      onChange={(e) => handleInputChange('header', {
+                        key: e.target.value,
+                        value: formData.header?.value || ''
+                      })}
+                      placeholder="Authorization"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Bearer Token *</label>
+                    <Input
+                      value={formData.header?.value || ''}
+                      onChange={(e) => handleInputChange('header', {
+                        key: formData.header?.key || '',
+                        value: e.target.value
+                      })}
+                      placeholder="Bearer token value"
+                      type="password"
+                    />
+                  </div>
+                </>
+              )}
+
             </CardContent>
           </Card>
+
 
           {/* Verification Status */}
           {verificationStatus !== 'idle' && (
@@ -169,8 +262,8 @@ export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
                       {verificationStatus === 'success' ? 'Connection Successful' : 'Connection Failed'}
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      {verificationStatus === 'success' 
-                        ? 'Your MCP server is ready to use' 
+                      {verificationStatus === 'success'
+                        ? 'Your MCP server is ready to use'
                         : 'Please check your configuration and try again'
                       }
                     </p>

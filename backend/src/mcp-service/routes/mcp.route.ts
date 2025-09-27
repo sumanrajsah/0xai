@@ -1,17 +1,19 @@
 import { Router } from 'express';
-import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
+
 import cors from 'cors';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import { authenticate } from '../../auth-service/middleware/auth.midleware';
+import { saveServer } from '../controllers/save';
 import { allowedOrigins } from '../../utils/allowedOrigin';
-import { Account, authMe, logout } from '../controllers/auth.controller';
-import { authenticate } from '../middleware/auth.midleware';
+
+
 const router = Router();
 dotenv.config();
-
 router.use(cookieParser());
 router.use(cors({
     origin: function (origin, callback) {
-        //console.log('CORS Origin:', origin, allowedOrigins);
+        // console.log('CORS Origin:', origin, allowedOrigins);
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -20,9 +22,7 @@ router.use(cors({
     },
     credentials: true
 }));
-router.post('/account', Account)
-router.post('/logout', logout)
-router.get('/me', authenticate, authMe)
 
+router.post('/save', authenticate, saveServer);
 
 export default router;

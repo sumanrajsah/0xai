@@ -23,7 +23,7 @@ export const authenticate = (
         try {
             const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
             (req as any).user = decoded;
-
+            console.log('Authenticated user:', decoded);
             next();
             return;
         } catch (err) {
