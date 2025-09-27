@@ -41,9 +41,7 @@ interface ChatRequest {
     presence_penalty?: number
     supportsMedia?: boolean
     tools?: Array<string>
-    mcp_server?: Array<{
-      sid: string
-    }>
+    mcp_server?: string[]
     mcp_tools?: Array<any>
   }
 }
@@ -144,8 +142,10 @@ export default function ChatArea({
 
   const aiModels = [
     { value: 'gpt-4o', label: 'GPT-4o', description: 'Fast and efficient' },
+    { value: 'gpt-4o-mini', label: 'GPT-4o Mini', description: 'Fast and efficient' },
     { value: 'gpt-4.1', label: 'GPT-4.1', description: 'Fast and efficient' },
     { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini', description: 'Fast and efficient' },
+    { value: 'gpt-4.1-nano', label: 'GPT-4.1 Nano', description: 'Fast and efficient' },
     { value: 'gpt-5', label: 'GPT-5', description: 'Fast and efficient' },
     { value: 'gpt-5-nano', label: 'GPT-5 Nano', description: 'Fast and efficient' },
     { value: 'gpt-5-mini', label: 'GPT-5 Mini', description: 'Fast and efficient' },
@@ -237,7 +237,7 @@ export default function ChatArea({
           presence_penalty: 0,
           supportsMedia: true,
           ...(tools.length > 0 && { tools }),
-          mcp_server: selectedMCP !== 'none' ? [{ sid: selectedMCP }] : [],
+          mcp_server: selectedMCP !== 'none' ? [selectedMCP] : [],
           mcp_tools: tools
         }
       }

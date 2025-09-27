@@ -36,7 +36,6 @@ interface ChatRequest {
       text?: string
       image_url?: {
         url: string
-
       }
     }>
   }
@@ -120,9 +119,12 @@ export default function Dashboard() {
   }
 
   const sendMessage = async (chatRequest: ChatRequest) => {
-    if (!activeChatId) {
+    // Ensure we have an active chat or create one
+    let chatId = activeChatId
+    if (!chatId) {
       createNewChat()
-      return
+      // Wait for the new chat to be created and set as active
+      chatId = Date.now().toString()
     }
 
     // Extract the latest user message from the new chat request format
@@ -137,7 +139,7 @@ export default function Dashboard() {
 
     // Add user message to UI immediately
     setChats(prev => prev.map(chat =>
-      chat.id === activeChatId
+      chat.id === (activeChatId || chatId)
         ? { ...chat, messages: [...chat.messages, userMessage] }
         : chat
     ))
@@ -156,14 +158,23 @@ export default function Dashboard() {
             'Content-Type': 'application/json',
           },
           withCredentials: true, // Include cookies if needed for authentication
+          timeout: 30000, // 30 second timeout
         }
       )
+
+      console.log('Response from backend:', response.data)
 
       // Handle the API response
       if (response.data && response.data.success) {
         let aiResponseContent = ''
 
-        if (response.data.needsToolExecution && response.data.toolCalls) {
+        // Check if we have a proper message structure
+        if (response.data.message && response.data.message.content) {
+          aiResponseContent = response.data.message.content
+        } else if (response.data.response) {
+          // Handle legacy response format
+          aiResponseContent = response.data.response
+        } else if (response.data.needsToolExecution && response.data.toolCalls) {
           // Handle tool execution response
           const toolCalls = response.data.toolCalls
           aiResponseContent = `I need to execute some tools to help you:\n\n`
@@ -174,22 +185,19 @@ export default function Dashboard() {
           })
 
           aiResponseContent += 'Let me execute these tools and get back to you with the results.'
-        } else if (response.data.response) {
-          // Handle regular text response
-          aiResponseContent = response.data.response
         } else {
-          aiResponseContent = 'I received your message but no response content was provided.'
+          aiResponseContent = 'I received your message but encountered an issue processing the response.'
         }
 
         const aiMessage: Message = {
-          id: response.data.msg_id || (Date.now() + 1).toString(),
+          id: response.data.message?.msg_id || (Date.now() + 1).toString(),
           content: aiResponseContent,
           isUser: false,
-          timestamp: new Date(response.data.created || Date.now())
+          timestamp: new Date(response.data.message?.created || Date.now())
         }
 
         setChats(prev => prev.map(chat =>
-          chat.id === activeChatId
+          chat.id === (activeChatId || chatId)
             ? {
               ...chat,
               messages: [...chat.messages, aiMessage],
@@ -198,29 +206,44 @@ export default function Dashboard() {
             : chat
         ))
       } else {
-        // Handle unexpected response format
-        throw new Error('API returned an unsuccessful response')
+        // Handle unsuccessful API response
+        throw new Error(response.data?.error || 'API returned an unsuccessful response')
       }
 
     } catch (error) {
       console.error('Error sending message to API:', error)
 
+      let errorMessage = 'Sorry, I encountered an error while processing your request. Please try again later.'
+
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          errorMessage = 'Request timed out. Please try again with a shorter message or check your connection.'
+        } else if (error.response?.status === 400) {
+          errorMessage = `Request error: ${error.response.data?.error || 'Bad request'}`
+        } else if (error.response?.status === 500) {
+          errorMessage = `Server error: ${error.response.data?.error || 'Internal server error'}`
+        } else if (error.response?.data?.error) {
+          errorMessage = `Error: ${error.response.data.error}`
+        } else if (error.message) {
+          errorMessage = `Network error: ${error.message}`
+        }
+      } else if (error instanceof Error) {
+        errorMessage = `Error: ${error.message}`
+      }
+
       // Show error message to user
-      const errorMessage: Message = {
+      const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
-        content: `Sorry, I encountered an error while processing your request. ${axios.isAxiosError(error)
-          ? error.response?.data?.error || error.message
-          : 'Please try again later.'
-          }`,
+        content: errorMessage,
         isUser: false,
         timestamp: new Date()
       }
 
       setChats(prev => prev.map(chat =>
-        chat.id === activeChatId
+        chat.id === (activeChatId || chatId)
           ? {
             ...chat,
-            messages: [...chat.messages, errorMessage],
+            messages: [...chat.messages, errorMsg],
             title: chat.title === 'New Chat' ? content.slice(0, 30) + (content.length > 30 ? '...' : '') : chat.title
           }
           : chat
@@ -235,7 +258,7 @@ export default function Dashboard() {
     if (chats.length === 0) {
       createNewChat()
     }
-  }, [])
+  }, [chats.length])
 
   // Handle navigation
   const handleCreateClick = () => {
@@ -433,4 +456,3 @@ export default function Dashboard() {
     </div>
   )
 }
-
