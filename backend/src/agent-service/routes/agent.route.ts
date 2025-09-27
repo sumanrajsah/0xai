@@ -1,20 +1,15 @@
 import { Router } from 'express';
-
+import { checkHandle, createAgent } from '../controllers/create';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import { authenticate } from '../../auth-service/middleware/auth.midleware';
-import { saveServer } from '../controllers/save';
 import { allowedOrigins } from '../../utils/allowedOrigin';
-import { getServerById } from '../controllers/get';
-
-
+import { authenticate } from '../../auth-service/middleware/auth.midleware';
 const router = Router();
 dotenv.config();
-router.use(cookieParser());
 router.use(cors({
     origin: function (origin, callback) {
-        // console.log('CORS Origin:', origin, allowedOrigins);
+        //console.log('CORS Origin:', origin, allowedOrigins);
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -24,7 +19,10 @@ router.use(cors({
     credentials: true
 }));
 
-router.post('/save', authenticate, saveServer);
-router.get('/', authenticate, getServerById);
+router.use(cookieParser());
+
+// Create Agent
+
+router.post('/create', authenticate, createAgent);
 
 export default router;

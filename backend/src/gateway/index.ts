@@ -65,6 +65,14 @@ app.use(
         [`^/${baseVersion}/mcp`]: `/${baseVersion}/mcp`,
     }))
 );
+app.use(
+    `/${baseVersion}/agent`,
+    createProxyMiddleware(standardProxyOptions('http://localhost:4003', {
+        [`^/${baseVersion}/agent`]: `/${baseVersion}/agent`,
+    }))
+);
+
+
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'healthy' });
 });
