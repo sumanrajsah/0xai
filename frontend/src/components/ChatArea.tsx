@@ -432,6 +432,7 @@ export default function ChatArea({
                   </div>
                   <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showModelDropdown ? 'rotate-180' : ''}`} />
                 </Button>
+<<<<<<< HEAD
                 {showModelDropdown && (
                   <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
                     <div className="p-3">
@@ -466,6 +467,36 @@ export default function ChatArea({
                                   <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
                                 </div>
                               )}
+=======
+            {showModelDropdown && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div className="p-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                      <Bot className="h-3 w-3 text-white" />
+                    </div>
+                    <div className="text-xs font-bold text-foreground">AI Models</div>
+                  </div>
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {aiModels.map((model) => (
+                      <div
+                        key={model.value}
+                        onClick={() => {
+                          onModelChange?.(model.value)
+                          setShowModelDropdown(false)
+                        }}
+                        className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                          selectedModel === model.value 
+                            ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]' 
+                            : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm">{model.label}</div>
+                            <div className={`text-xs mt-1 ${selectedModel === model.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                              {model.description}
+>>>>>>> 44f6b0a5956d6e32e7abbf6ef9d4ec8b3c53c280
                             </div>
                           </div>
                         ))}
@@ -497,6 +528,7 @@ export default function ChatArea({
                   </div>
                   <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showMCPDropdown ? 'rotate-180' : ''}`} />
                 </Button>
+<<<<<<< HEAD
                 {showMCPDropdown && (
                   <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
                     <div className="p-3">
@@ -531,6 +563,36 @@ export default function ChatArea({
                                   <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
                                 </div>
                               )}
+=======
+            {showMCPDropdown && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div className="p-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-orange-600 to-red-600 flex items-center justify-center">
+                      <Settings className="h-3 w-3 text-white" />
+                    </div>
+                    <div className="text-xs font-bold text-foreground">MCP Tools</div>
+                  </div>
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {mcpServers.map((mcp) => (
+                      <div
+                        key={mcp.value}
+                        onClick={() => {
+                          onMCPChange?.(mcp.value)
+                          setShowMCPDropdown(false)
+                        }}
+                        className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                          selectedMCP === mcp.value 
+                            ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]' 
+                            : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm">{mcp.label}</div>
+                            <div className={`text-xs mt-1 ${selectedMCP === mcp.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                              {mcp.description}
+>>>>>>> 44f6b0a5956d6e32e7abbf6ef9d4ec8b3c53c280
                             </div>
                           </div>
                         ))}
@@ -562,6 +624,7 @@ export default function ChatArea({
                   </div>
                   <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showAIToolDropdown ? 'rotate-180' : ''}`} />
                 </Button>
+<<<<<<< HEAD
                 {showAIToolDropdown && (
                   <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
                     <div className="p-3">
@@ -596,6 +659,36 @@ export default function ChatArea({
                                   <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
                                 </div>
                               )}
+=======
+            {showAIToolDropdown && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div className="p-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+                      <Wrench className="h-3 w-3 text-white" />
+                    </div>
+                    <div className="text-xs font-bold text-foreground">AI Tools</div>
+                  </div>
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {aiTools.map((tool) => (
+                      <div
+                        key={tool.value}
+                        onClick={() => {
+                          onAIToolChange?.(tool.value)
+                          setShowAIToolDropdown(false)
+                        }}
+                        className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                          selectedAITool === tool.value 
+                            ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]' 
+                            : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm">{tool.label}</div>
+                            <div className={`text-xs mt-1 ${selectedAITool === tool.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                              {tool.description}
+>>>>>>> 44f6b0a5956d6e32e7abbf6ef9d4ec8b3c53c280
                             </div>
                           </div>
                         ))}
@@ -627,6 +720,7 @@ export default function ChatArea({
                   </div>
                   <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showLanguageDropdown ? 'rotate-180' : ''}`} />
                 </Button>
+<<<<<<< HEAD
                 {showLanguageDropdown && (
                   <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
                     <div className="p-3">
@@ -661,6 +755,36 @@ export default function ChatArea({
                                   <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
                                 </div>
                               )}
+=======
+            {showLanguageDropdown && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div className="p-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 flex items-center justify-center">
+                      <Globe className="h-3 w-3 text-white" />
+                    </div>
+                    <div className="text-xs font-bold text-foreground">Languages</div>
+                  </div>
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {languages.map((language) => (
+                      <div
+                        key={language.value}
+                        onClick={() => {
+                          onLanguageChange?.(language.value)
+                          setShowLanguageDropdown(false)
+                        }}
+                        className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                          selectedLanguage === language.value 
+                            ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]' 
+                            : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm">{language.label}</div>
+                            <div className={`text-xs mt-1 ${selectedLanguage === language.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                              {language.description}
+>>>>>>> 44f6b0a5956d6e32e7abbf6ef9d4ec8b3c53c280
                             </div>
                           </div>
                         ))}

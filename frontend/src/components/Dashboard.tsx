@@ -8,6 +8,7 @@ import ChatArea from '@/components/ChatArea'
 import CreatePage from '@/components/CreatePage'
 import AIAgentPage from '@/components/AIAgentPage'
 import AIAgentsListPage from '@/components/AIAgentsListPage'
+import MyAgentsPage from '@/components/MyAgentsPage'
 import MCPToolsPage from '@/components/MCPToolsPage'
 import AddMCPServerPage from '@/components/AddMCPServerPage'
 import { Card } from '@/components/ui/card'
@@ -75,7 +76,7 @@ interface Chat {
   timestamp: Date
 }
 
-type Page = 'dashboard' | 'create' | 'ai-agent' | 'ai-agents-list' | 'mcp-tools' | 'add-mcp-server'
+type Page = 'dashboard' | 'create' | 'ai-agent' | 'ai-agents-list' | 'my-agents' | 'mcp-tools' | 'add-mcp-server'
 
 export default function Dashboard() {
   const [chats, setChats] = useState<Chat[]>([])
@@ -264,6 +265,10 @@ export default function Dashboard() {
     setCurrentPage('ai-agent')
   }
 
+  const handleMyAgents = () => {
+    setCurrentPage('my-agents')
+  }
+
   // Render different pages based on current page
   if (currentPage === 'create') {
     return (
@@ -306,6 +311,14 @@ export default function Dashboard() {
     return (
       <AddMCPServerPage
         onBack={handleBackToMCPTools}
+      />
+    )
+  }
+
+  if (currentPage === 'my-agents') {
+    return (
+      <MyAgentsPage
+        onBack={handleBackToDashboard}
       />
     )
   }
