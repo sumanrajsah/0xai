@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Send, Bot, User, Loader2, ChevronDown, Settings, Plus, Image, FileText, X, Wrench, Globe } from 'lucide-react'
+import axios from 'axios'
+import { useAuth } from '@/hooks/useAuth'
 
 interface OpenAIMessage {
   role: "system" | "user" | "assistant"
@@ -38,14 +40,7 @@ interface ChatRequest {
     frequency_penalty?: number
     presence_penalty?: number
     supportsMedia?: boolean
-    tools?: Array<{
-      type: "function"
-      function: {
-        name: string
-        description?: string
-        parameters?: object
-      }
-    }>
+    tools?: Array<string>
     mcp_server?: Array<{
       sid: string
     }>
@@ -97,6 +92,7 @@ export default function ChatArea({
   onAIToolChange,
   onLanguageChange
 }: ChatAreaProps) {
+  const { user, status } = useAuth();
   const [inputValue, setInputValue] = useState('')
   const [showModelDropdown, setShowModelDropdown] = useState(false)
   const [showMCPDropdown, setShowMCPDropdown] = useState(false)
@@ -107,6 +103,44 @@ export default function ChatArea({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [mcpServers, setMcpServers] = useState<any[]>([])
+
+  useEffect(() => {
+    async function getData() {
+      if (status === 'unauthenticated') {
+        console.error("User unauthenticated");
+        return;
+      }
+      if (!user?.uid) {
+        console.error("User UID is missing");
+        return;
+      }
+
+      try {
+        const serverResult = await axios.get(`${process.env.NEXT_PUBLIC_API_URI}/v1/mcp?uid=${user.uid}`, { withCredentials: true })
+
+          ;
+        // //console.log(userResult, serverResult)
+        // Handle workspace result
+
+        // Handle server result independently
+
+        const serverResponse = serverResult;
+        if (serverResponse.status === 200) {
+          if (mcpServers.length !== serverResponse.data.data)
+            setMcpServers(serverResponse.data.data);
+        } else {
+          // console.warn("Server data invalid or not found:", serverResponse);
+          setMcpServers([]);
+        }
+      } catch (err) {
+        // console.error("Unexpected error occurred:", err);
+      }
+
+    }
+
+    if (user) getData();
+  }, [user, status])
 
   const aiModels = [
     { value: 'gpt-4o-mini', label: 'GPT-4o Mini', description: 'Fast and efficient' },
@@ -115,20 +149,11 @@ export default function ChatArea({
     { value: 'claude-3-5-sonnet', label: 'Claude 3.5 Sonnet', description: 'Advanced reasoning' }
   ]
 
-  const mcpServers = [
-    { value: 'none', label: 'No MCP Tools', description: 'Basic chat only' },
-    { value: 'web-search', label: 'Web Search', description: 'Real-time web search' },
-    { value: 'file-system', label: 'File System', description: 'File operations' },
-    { value: 'database', label: 'Database', description: 'Database queries' }
-  ]
+
 
   const aiTools = [
     { value: 'none', label: 'No AI Tools', description: 'Basic chat only' },
-    { value: 'code-generator', label: 'Code Generator', description: 'Generate code snippets' },
-    { value: 'text-analyzer', label: 'Text Analyzer', description: 'Analyze and summarize text' },
-    { value: 'image-generator', label: 'Image Generator', description: 'Generate images from text' },
-    { value: 'data-visualizer', label: 'Data Visualizer', description: 'Create charts and graphs' },
-    { value: 'translator', label: 'Translator', description: 'Translate between languages' }
+    { value: 'web_search', label: 'Web Search', description: 'Search the web for information' },
   ]
 
   const languages = [
@@ -193,48 +218,8 @@ export default function ChatArea({
         })
       }
 
-      // Prepare tools array
-      const tools: Array<{ type: "function", function: { name: string, description?: string, parameters?: object } }> = []
-
-      if (selectedAITool !== 'none') {
-        // Add AI tool functions based on selection
-        const toolConfigs: { [key: string]: { name: string, description: string, parameters?: object } } = {
-          'web-search': {
-            name: 'web_search',
-            description: 'Search the web for current information',
-            parameters: {
-              type: 'object',
-              properties: {
-                query: {
-                  type: 'string',
-                  description: 'Search query'
-                }
-              },
-              required: ['query']
-            }
-          },
-          'code-generator': {
-            name: 'generate_code',
-            description: 'Generate code snippets',
-            parameters: {
-              type: 'object',
-              properties: {
-                language: { type: 'string', description: 'Programming language' },
-                description: { type: 'string', description: 'Code requirements' }
-              },
-              required: ['language', 'description']
-            }
-          }
-        }
-
-        const toolConfig = toolConfigs[selectedAITool]
-        if (toolConfig) {
-          tools.push({
-            type: "function",
-            function: toolConfig
-          })
-        }
-      }
+      // Prepare tools array - just pass the selected tool values
+      const tools = selectedAITool !== 'none' ? [selectedAITool] : []
 
       const chatRequest: ChatRequest = {
         chat_id: chatId,
@@ -250,7 +235,7 @@ export default function ChatArea({
           supportsMedia: true,
           ...(tools.length > 0 && { tools }),
           mcp_server: selectedMCP !== 'none' ? [{ sid: "mcp_01998a6d-abec-7298-9158-7c7a5dba2db6" }] : [],
-          mcp_tools: []
+          mcp_tools: tools
         }
       }
 
@@ -492,7 +477,7 @@ export default function ChatArea({
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-orange-400 to-red-500"></div>
                     <span className="truncate font-medium">
-                      {mcpServers.find(m => m.value === selectedMCP)?.label || 'MCP'}
+                      {mcpServers.find(m => m.sid === selectedMCP)?.label || 'MCP'}
                     </span>
                   </div>
                   <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showMCPDropdown ? 'rotate-180' : ''}`} />
@@ -509,12 +494,12 @@ export default function ChatArea({
                       <div className="space-y-1">
                         {mcpServers.map((mcp) => (
                           <div
-                            key={mcp.value}
+                            key={mcp.sid}
                             onClick={() => {
-                              onMCPChange?.(mcp.value)
+                              onMCPChange?.(mcp.sid)
                               setShowMCPDropdown(false)
                             }}
-                            className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${selectedMCP === mcp.value
+                            className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${selectedMCP === mcp.sid
                               ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]'
                               : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
                               }`}
@@ -522,11 +507,11 @@ export default function ChatArea({
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
                                 <div className="font-semibold text-sm">{mcp.label}</div>
-                                <div className={`text-xs mt-1 ${selectedMCP === mcp.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                                <div className={`text-xs mt-1 ${selectedMCP === mcp.sid ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                                   {mcp.description}
                                 </div>
                               </div>
-                              {selectedMCP === mcp.value && (
+                              {selectedMCP === mcp.sid && (
                                 <div className="w-4 h-4 rounded-full bg-primary-foreground/20 flex items-center justify-center">
                                   <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
                                 </div>

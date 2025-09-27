@@ -1,40 +1,55 @@
-import { Request, Response } from 'express';
+import dotenv from 'dotenv';
+dotenv.config();
 import { v7 as uuidv7 } from 'uuid';
-import { McpClient } from '../../../utils/mcpClient';
+import { Request, Response } from 'express';
 import { Search, web_search } from '../../../utils/webSearch';
 import { getAiModels } from '../../../utils/model';
+import { McpClient } from '../../../utils/mcpClient';
 
+type MessageContentItem =
+    | { type: 'text'; text: string }
+    | { type: 'image_url'; image_url: string }
+    | {
+        type: 'file'; file: {
+            filename: string,
+            file_data: string,
+            file_url?: string
+        }
+    }
+    | string;
+
+interface ChatConfig {
+    model: "gpt-4o-mini" | "gpt-4o";
+    temperature: number;
+    top_p: number;
+    frequency_penalty: number;
+    presence_penalty: number;
+    supportsMedia: boolean;
+    tools: string[];
+    mcp_server: any[];
+    mcp_tools: any[];
+}
 
 interface ChatMessage {
     role: "system" | "user" | "assistant" | "tool";
     content?: MessageContentItem[];
-    name?: string;
     tool_calls?: any[];
     tool_call_id?: string;
 }
 
 async function generateResponse(
     db: any,
+    redis: any,
     role: "system" | "user" | "assistant" | "tool",
     userInput: MessageContentItem[],
     history: ChatMessage[],
-    config: any,
-    signal?: AbortSignal,
-    tool_call_id?: string
-): Promise<{ response?: string; toolCalls?: any[]; needsToolExecution?: boolean }> {
-    const traceId = `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    console.log(`🚀 [${traceId}] generateResponse started`, {
-        role,
-        userInputLength: userInput?.length || 0,
-        historyLength: history?.length || 0,
-        model: config?.model
-    });
+    config: ChatConfig
+): Promise<any> {
 
-    // Build system message
     const currentTime = new Date().toString();
-    let systemText = `You are a helpful assistant. The current date is ${currentTime}.`;
+    let systemText = `You are a helpful assistant. The current date ${currentTime}. Answer based on this.`;
 
-    if (config.tools?.includes("web_search")) {
+    if (config.tools.includes("web_search")) {
         systemText += `
 
 When you receive search results from the "web_search" tool, use them to ground your answer.
@@ -42,46 +57,125 @@ When you receive search results from the "web_search" tool, use them to ground y
 - At the end, add a "Sources:" section.
 - In "Sources", use a numbered list where each number matches the inline citation.
 - Format each source as the page title with an underlined Markdown hyperlink.
+  Example:
 
-If the search results are empty or irrelevant, state clearly that no useful information was found.
+  Sources:
+  1. [_Blockchain.com_](https://www.blockchain.com/)
+  2. [_CoinDesk_](https://www.coindesk.com/)
+
+If the search results are empty or irrelevant, state clearly that no useful information was found instead of guessing.
 Always perform at least one "web_search" query before answering any user question.`;
     }
 
-    // Build messages array
     let messages: ChatMessage[] = [
         { role: "system", content: [{ type: "text", text: systemText }] },
         ...history,
-        tool_call_id
-            ? { role: role, content: userInput, tool_call_id }
-            : { role: role, content: userInput },
+        { role: role, content: userInput }
     ];
 
-    try {
-        // Initialize MCP connections to get available tools
-        console.log(`🔌 [${traceId}] Initializing MCP connections`);
-        const connectionResults = await Promise.all(
-            (config?.mcp_server ?? []).map(async (item: any, index: number) => {
-                const sid = item.sid
-                console.log(`🔗 [${traceId}] Connecting to MCP server ${index}`, { item });
-                const result = await McpClient(db, sid, config.mcp_tools ?? []);
-                console.log(`✅ [${traceId}] MCP server ${index} connected`, {
-                    toolsCount: result?.tools?.length || 0
+    // Initialize MCP connections
+    const connectionResults = await Promise.all(
+        (config?.mcp_server ?? []).map(async (endpoint: any) => {
+            return await McpClient(db, endpoint, config.mcp_tools ?? []);
+        })
+    );
+
+    const tools = connectionResults.flatMap((result: any) => result.tools);
+    let customTools: any[] = [];
+
+    if (config.tools.includes('web_search')) {
+        customTools.push(web_search);
+    }
+
+    const modelConfig = await getAiModels(
+        config.model,
+        messages,
+        [...tools, ...customTools],
+        config.temperature,
+        config.top_p,
+        config.frequency_penalty,
+        config.presence_penalty,
+        config.supportsMedia
+    );
+
+    const result = await fetch(modelConfig.url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${modelConfig.apiKey}`
+        },
+        body: JSON.stringify(modelConfig.payload)
+    });
+
+    if (!result.ok) {
+        const errorText = await result.text();
+        throw new Error(`API request failed: ${result.status} ${result.statusText}`);
+    }
+
+    const response = await result.json();
+
+    // Handle tool calls if present
+    if (response.choices[0]?.message?.tool_calls) {
+        const toolCalls = response.choices[0].message.tool_calls;
+        let toolResults = [];
+
+        for (const toolCall of toolCalls) {
+            const functionName = toolCall.function.name;
+            const args = JSON.parse(toolCall.function.arguments);
+
+            if (functionName === "web_search") {
+                const searchResults = await Search(args);
+                toolResults.push({
+                    tool_call_id: toolCall.id,
+                    content: JSON.stringify(searchResults)
                 });
-                return result;
-            })
-        );
+            } else {
+                // Handle MCP tools
+                const clientsWithTool = connectionResults
+                    .filter(({ tools }: any) => tools.some((t: any) => t.function.name === functionName))
+                    .map(({ mcpClient }: any) => mcpClient)
+                    .filter((client: any) => client !== null);
 
-        const mcpTools = connectionResults.flatMap(result => result.tools);
-        const customTools = [web_search];
-        const allTools = [...mcpTools, ...customTools];
+                if (clientsWithTool.length > 0) {
+                    try {
+                        const toolResult: any = await clientsWithTool[0].callTool({
+                            name: functionName,
+                            arguments: args
+                        });
 
-        console.log(`🛠️ [${traceId}] Tools available:`, allTools.map(t => t.function?.name));
+                        toolResults.push({
+                            tool_call_id: toolCall.id,
+                            content: toolResult.content?.[0]?.text || JSON.stringify(toolResult)
+                        });
+                    } catch (error) {
+                        toolResults.push({
+                            tool_call_id: toolCall.id,
+                            content: `Error executing tool: ${error}`
+                        });
+                    }
+                }
+            }
+        }
 
-        // Get AI model configuration
-        const modelConfig = await getAiModels(
+        // Add tool results to messages and make another API call
+        messages.push({
+            role: "assistant",
+            tool_calls: toolCalls
+        });
+
+        for (const toolResult of toolResults) {
+            messages.push({
+                role: "tool",
+                content: [{ type: "text", text: toolResult.content }],
+                tool_call_id: toolResult.tool_call_id
+            });
+        }
+
+        // Make final API call with tool results
+        const finalModelConfig = await getAiModels(
             config.model,
             messages,
-            allTools,
+            [...tools, ...customTools],
             config.temperature,
             config.top_p,
             config.frequency_penalty,
@@ -89,267 +183,57 @@ Always perform at least one "web_search" query before answering any user questio
             config.supportsMedia
         );
 
-        // Make API request
-        console.log(`📡 [${traceId}] Making API request to ${modelConfig.provider}`);
-        const result = await fetch(modelConfig.url, {
+        const finalResult = await fetch(finalModelConfig.url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${modelConfig.apiKey}`
+                "Authorization": `Bearer ${finalModelConfig.apiKey}`
             },
-            body: JSON.stringify(modelConfig.payload),
-            signal: signal
+            body: JSON.stringify(finalModelConfig.payload)
         });
-        console.log(result)
 
-        if (!result.ok) {
-            const errorText = await result.text();
-            console.error(`❌ [${traceId}] API request failed:`, errorText);
-            throw new Error(`API request failed: ${result.status} ${result.statusText}`);
+        if (!finalResult.ok) {
+            const errorText = await finalResult.text();
+            throw new Error(`Final API request failed: ${finalResult.status} ${finalResult.statusText}`);
         }
 
-        // Parse response
-        const responseData = await result.json();
-        const choice = responseData.choices?.[0];
-
-        if (!choice) {
-            throw new Error('No valid response from AI model');
-        }
-
-        let fullResponse = "";
-        const toolCalls = choice.message?.tool_calls || [];
-
-        // Handle regular text response
-        if (choice.message?.content) {
-            fullResponse = choice.message.content;
-        }
-
-        // Handle tool calls
-        if (toolCalls.length > 0) {
-            console.log(`🛠️ [${traceId}] Processing ${toolCalls.length} tool calls`);
-
-            // Check if any tool calls are for MCP tools (not web_search)
-            const hasMcpTools = toolCalls.some((toolCall: { function: { name: string; }; }) =>
-                toolCall.function.name !== "web_search"
-            );
-
-            // If there are MCP tools, return them to frontend for execution
-            if (hasMcpTools) {
-                console.log(`🔄 [${traceId}] Returning MCP tool calls to frontend`);
-                return {
-                    response: fullResponse,
-                    toolCalls: toolCalls,
-                    needsToolExecution: true
-                };
-            }
-
-            // Only execute web_search tools on backend
-            const webSearchCalls = toolCalls.filter((toolCall: { function: { name: string; }; }) =>
-                toolCall.function.name === "web_search"
-            );
-
-            if (webSearchCalls.length > 0) {
-                // Add assistant message with tool calls to history
-                history.push({
-                    role: 'assistant',
-                    content: fullResponse ? [{ type: 'text', text: fullResponse }] : undefined,
-                    tool_calls: toolCalls
-                });
-
-                // Process web search tool calls
-                for (const toolCall of webSearchCalls) {
-                    const args = JSON.parse(toolCall.function.arguments);
-                    console.log(`🔍 [${traceId}] Executing web search`);
-
-                    try {
-                        const searchResults = await Search(args);
-                        const toolResult = JSON.stringify(searchResults);
-
-                        // Add tool result to history
-                        history.push({
-                            role: "tool",
-                            content: [{ type: "text", text: toolResult }],
-                            tool_call_id: toolCall.id
-                        });
-
-                        console.log(`✅ [${traceId}] Web search executed successfully`);
-                    } catch (error: any) {
-                        console.error(`❌ [${traceId}] Web search failed:`, error.message);
-
-                        // Add error result to history
-                        history.push({
-                            role: "tool",
-                            content: [{ type: "text", text: `Error: ${error.message}` }],
-                            tool_call_id: toolCall.id
-                        });
-                    }
-                }
-
-                // Make another API call to get final response with tool results
-                console.log(`🔄 [${traceId}] Making follow-up API call with tool results`);
-                const followUpConfig = await getAiModels(
-                    config.model,
-                    history,
-                    allTools,
-                    config.temperature,
-                    config.top_p,
-                    config.frequency_penalty,
-                    config.presence_penalty,
-                    config.supportsMedia
-                );
-
-                const followUpResult = await fetch(followUpConfig.url, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${followUpConfig.apiKey}`
-                    },
-                    body: JSON.stringify(followUpConfig.payload),
-                    signal: signal
-                });
-
-                if (followUpResult.ok) {
-                    const followUpData = await followUpResult.json();
-                    const followUpChoice = followUpData.choices?.[0];
-                    if (followUpChoice?.message?.content) {
-                        fullResponse = followUpChoice.message.content;
-                    }
-                }
-            }
-        }
-
-        console.log(`✅ [${traceId}] Response generated successfully`);
-        return { response: fullResponse };
-
-    } catch (error: any) {
-        console.error(`❌ [${traceId}] Error generating response:`, error);
-
-        if (error.name === 'AbortError') {
-            return { response: "Request was aborted by the user." };
-        }
-
-        return { response: `An error occurred while generating the response: ${error}` };
+        return await finalResult.json();
     }
+
+    return response;
 }
 
 export const Chat = async (req: Request, res: Response): Promise<void> => {
-    const message = req.body;
-    const abortController = (req as any).abortController;
-    const signal = abortController?.signal;
-    const db = req.app.locals.db;
-    console.log(message)
-
     try {
-        // Check if this is a regular chat message or tool results response
-        const isToolResultsRequest = message.toolResults && Array.isArray(message.toolResults);
+        const db = req.app.locals.db;
+        const redis = req.app.locals.redis;
+        const { chat_id, messageData, config } = req.body;
 
-        if (isToolResultsRequest) {
-            // Handle tool results from frontend
-            console.log('🔧 Processing tool results from frontend');
+        const response = await generateResponse(
+            db,
+            redis,
+            "user",
+            messageData.content,
+            [], // Empty history for now - you can implement history retrieval if needed
+            config
+        );
 
-            const { history, toolResults, config } = message;
-            const updatedHistory: ChatMessage[] = [...history];
+        const assistantMessage = response.choices[0]?.message;
 
-            // Add tool results to history
-            toolResults.forEach((toolResult: any) => {
-                updatedHistory.push({
-                    role: "tool",
-                    content: [{ type: "text", text: toolResult.content }],
-                    tool_call_id: toolResult.tool_call_id
-                });
-            });
-
-            // Generate response with tool results
-            const result = await generateResponse(
-                db,
-                "tool",
-                [],
-                updatedHistory,
-                config,
-                signal
-            );
-
-            res.json({
-                success: true,
-                response: result.response,
+        res.json({
+            success: true,
+            message: {
+                role: "assistant",
+                content: assistantMessage.content,
                 msg_id: `msg_${uuidv7()}`,
-                created: Date.now(),
-                model: {
-                    name: config?.model,
-                    provider: 'openai'
-                }
-            });
-
-        } else {
-            // Handle regular chat message
-            console.log('📝 Processing chat request:', {
-                chatId: message.chat_id,
-                model: message.config?.model,
-                hasTools: !!message.config?.tools?.length
-            });
-
-            const chatMessage = message.messageData.content;
-            // Simple history structure - in a real app you'd load this from storage
-            const history: ChatMessage[] = message.history || [];
-
-            const result = await generateResponse(
-                db,
-                "user",
-                chatMessage,
-                history,
-                message.config,
-                signal
-            );
-
-            // If AI wants to call MCP tools, return them to frontend
-            if (result.needsToolExecution && result.toolCalls) {
-                res.json({
-                    success: true,
-                    needsToolExecution: true,
-                    toolCalls: result.toolCalls,
-                    response: result.response,
-                    history: [...history, {
-                        role: 'assistant',
-                        content: result.response ? [{ type: 'text', text: result.response }] : undefined,
-                        tool_calls: result.toolCalls
-                    }],
-                    msg_id: `msg_${uuidv7()}`,
-                    created: Date.now(),
-                    model: {
-                        name: message.config?.model,
-                        provider: 'openai'
-                    }
-                });
-                return;
+                created: Date.now()
             }
-
-            // Return regular response
-            res.json({
-                success: true,
-                response: result.response,
-                msg_id: `msg_${uuidv7()}`,
-                created: Date.now(),
-                model: {
-                    name: message.config?.model,
-                    provider: 'openai'
-                }
-            });
-        }
+        });
 
     } catch (error: any) {
-        console.error('Chat error:', error);
-
-        if (error.name === 'AbortError') {
-            res.status(499).json({
-                success: false,
-                error: 'Request aborted by client'
-            });
-        } else {
-            res.status(500).json({
-                success: false,
-                error: 'Internal server error',
-                message: error.message
-            });
-        }
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
+        });
     }
 };

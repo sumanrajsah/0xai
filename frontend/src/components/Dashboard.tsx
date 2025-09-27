@@ -23,7 +23,6 @@ interface OpenAIMessage {
     text?: string
     image_url?: {
       url: string
-      detail?: "low" | "high" | "auto"
     }
   }>
 }
@@ -36,7 +35,7 @@ interface ChatRequest {
       text?: string
       image_url?: {
         url: string
-        detail?: "low" | "high" | "auto"
+
       }
     }>
   }
@@ -47,14 +46,7 @@ interface ChatRequest {
     frequency_penalty?: number
     presence_penalty?: number
     supportsMedia?: boolean
-    tools?: Array<{
-      type: "function"
-      function: {
-        name: string
-        description?: string
-        parameters?: object
-      }
-    }>
+    tools?: Array<string>
     mcp_server?: Array<{
       sid: string
     }>
