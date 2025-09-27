@@ -8,29 +8,69 @@ interface Tools {
         name: string;
         description: string;
         parameters: any;
+    };
+}
+
+async function getMcpServerDetails(db: any, serverId: string) {
+    const cacheKey = `mcp_server:${serverId}`;
+
+    try {
+        // 1. Check Redis first
+
+        // 2. Fallback to MongoDB
+        const mcp_servers = db.collection('mcp_servers');
+        const mcp = await mcp_servers.findOne({ sid: serverId });
+        console.log(mcp, serverId)
+
+        if (!mcp) {
+            return {
+                success: false,
+                data: 'not found'
+            };
+        }
+
+
+        return {
+            success: true,
+            data: mcp
+        };
+    } catch (e) {
+        console.error(e);
+        return {
+            success: false,
+            data: 'something went wrong'
+        };
     }
 }
 
-export async function MCP(serverInfo: any) {
+
+export async function McpClient(db: any, server: any, allowedTools: any[]) {
+    // console.log(server)
+    const serverInfo = await getMcpServerDetails(db, server)
+    console.log(serverInfo)
+    if (!serverInfo.success) {
+        throw new Error("Missing required server information (authKey or URI).");
+    }
     let mcpClient = new Client({ name: "mcp-client-cli", version: "1.0.0" });
     const headers: HeadersInit = {};
-    console.log("Connecting to MCP server with info:", serverInfo);
 
     try {
-        if (!serverInfo?.uri) {
+        const s: ServerInfo = serverInfo.data;
+        // Ensure that server info contains authKey and uri
+        if (!s.config.url) {
             throw new Error("Missing required server information (authKey or URI).");
         }
 
-        // Add authorization header if authKey is provided
-        if (serverInfo.auth) {
-            headers[serverInfo.header.key] = `${serverInfo.header.value}`;
+        // console.log("Server Info:", serverInfo);
+        if (s.auth) {
+            headers[s.config.header.key] = `Bearer ${s.config.header.value}`;
         }
-        console.log("Connecting with headers:", headers);
 
+        // Set up HTTP transport
         let transport;
-        if (serverInfo.type === 'http') {
+        if (s.config.type === 'http') {
             transport = new StreamableHTTPClientTransport(
-                new URL(String(serverInfo.uri)),
+                new URL(String(s.config.url)),
                 {
                     requestInit: {
                         headers
@@ -39,7 +79,7 @@ export async function MCP(serverInfo: any) {
             );
         } else {
             transport = new SSEClientTransport(
-                new URL(String(serverInfo.uri)),
+                new URL(String(s.config.url)),
                 {
                     requestInit: {
                         headers
@@ -47,7 +87,6 @@ export async function MCP(serverInfo: any) {
                 }
             );
         }
-
         // Connect to the transport - this returns a promise
         await mcpClient.connect(transport);
 
@@ -78,22 +117,37 @@ export async function MCP(serverInfo: any) {
             // Resources are optional, so we continue without them
         }
 
-        console.log("Resources:", resources);
-        console.log("Connected to server with tools:", toolsResult.tools.map(({ name }) => name));
+        // console.log("Resources:", resources);
+        // console.log("Connected to server with tools:", toolsResult.tools.map((tool: { name: string }) => tool.name));
 
-        const tools: Tools[] = toolsResult.tools.map(tool => ({
-            type: "function" as const,
-            function: {
-                name: tool.name,
-                description: tool.description ?? "", // Ensuring it's always a string
-                parameters: tool.inputSchema
-            }
-        }));
+        if (allowedTools.length > 0) {
+            const mappedTools: Tools[] = toolsResult.tools
+                .filter((tool: any) => allowedTools.includes(tool.name))
+                .map((tool: any) => ({
+                    type: "function" as const,
+                    function: {
+                        name: tool.name,
+                        description: tool.description ?? "",
+                        parameters: tool.inputSchema
+                    }
+                }));
 
-        return { tools, mcpClient, resources, error: null };
+            return { tools: mappedTools, mcpClient, resources };
+        } else {
+            const tools: Tools[] = toolsResult.tools.map((tool: any) => ({
+                type: "function" as const,
+                function: {
+                    name: tool.name,
+                    description: tool.description ?? "", // Ensuring it's always a string
+                    parameters: tool.inputSchema
+                }
+            }));
+
+            return { tools, mcpClient, resources };
+        }
 
     } catch (error: any) {
-        console.warn("MCP Connection Error:", error.message);
+        console.error("MCP Connection Error:", error.message);
 
         // Clean up the client if connection failed
         try {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import axios from 'axios'
 import WalletConnectButton from '@/components/WalletConnectButton'
 import Sidebar from '@/components/Sidebar'
 import ChatArea from '@/components/ChatArea'
@@ -13,6 +14,52 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Bot, Plus } from 'lucide-react'
+
+interface OpenAIMessage {
+  role: "system" | "user" | "assistant"
+  content: string | Array<{
+    type: "text" | "image_url"
+    text?: string
+    image_url?: {
+      url: string
+      detail?: "low" | "high" | "auto"
+    }
+  }>
+}
+
+interface ChatRequest {
+  chat_id: string
+  messageData: {
+    content: Array<{
+      type: "text" | "image_url"
+      text?: string
+      image_url?: {
+        url: string
+        detail?: "low" | "high" | "auto"
+      }
+    }>
+  }
+  config: {
+    model: string
+    temperature?: number
+    top_p?: number
+    frequency_penalty?: number
+    presence_penalty?: number
+    supportsMedia?: boolean
+    tools?: Array<{
+      type: "function"
+      function: {
+        name: string
+        description?: string
+        parameters?: object
+      }
+    }>
+    mcp_server?: Array<{
+      sid: string
+    }>
+    mcp_tools?: Array<any>
+  }
+}
 
 interface Message {
   id: string
@@ -58,11 +105,14 @@ export default function Dashboard() {
     setCurrentPage('dashboard')
   }
 
-  const sendMessage = async (content: string) => {
+  const sendMessage = async (chatRequest: ChatRequest) => {
     if (!activeChatId) {
       createNewChat()
       return
     }
+
+    // Extract the latest user message from the new chat request format
+    const content = chatRequest.messageData.content.find(c => c.type === 'text')?.text || 'Message with attachments'
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -71,36 +121,99 @@ export default function Dashboard() {
       timestamp: new Date()
     }
 
-    // Add user message
-    setChats(prev => prev.map(chat => 
-      chat.id === activeChatId 
+    // Add user message to UI immediately
+    setChats(prev => prev.map(chat =>
+      chat.id === activeChatId
         ? { ...chat, messages: [...chat.messages, userMessage] }
         : chat
     ))
 
     setIsLoading(true)
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
+    try {
+      // Send the chat request to your backend API
+      console.log('Sending ChatRequest to backend:', chatRequest)
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URI}/v1/chat/completion`,
+        chatRequest,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true, // Include cookies if needed for authentication
+        }
+      )
+
+      // Handle the API response
+      if (response.data && response.data.success) {
+        let aiResponseContent = ''
+
+        if (response.data.needsToolExecution && response.data.toolCalls) {
+          // Handle tool execution response
+          const toolCalls = response.data.toolCalls
+          aiResponseContent = `I need to execute some tools to help you:\n\n`
+
+          toolCalls.forEach((toolCall: any, index: number) => {
+            aiResponseContent += `${index + 1}. **${toolCall.function.name}**\n`
+            aiResponseContent += `   Arguments: ${toolCall.function.arguments}\n\n`
+          })
+
+          aiResponseContent += 'Let me execute these tools and get back to you with the results.'
+        } else if (response.data.response) {
+          // Handle regular text response
+          aiResponseContent = response.data.response
+        } else {
+          aiResponseContent = 'I received your message but no response content was provided.'
+        }
+
+        const aiMessage: Message = {
+          id: response.data.msg_id || (Date.now() + 1).toString(),
+          content: aiResponseContent,
+          isUser: false,
+          timestamp: new Date(response.data.created || Date.now())
+        }
+
+        setChats(prev => prev.map(chat =>
+          chat.id === activeChatId
+            ? {
+              ...chat,
+              messages: [...chat.messages, aiMessage],
+              title: chat.title === 'New Chat' ? content.slice(0, 30) + (content.length > 30 ? '...' : '') : chat.title
+            }
+            : chat
+        ))
+      } else {
+        // Handle unexpected response format
+        throw new Error('API returned an unsuccessful response')
+      }
+
+    } catch (error) {
+      console.error('Error sending message to API:', error)
+
+      // Show error message to user
+      const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I understand you're asking about "${content}". This is a simulated AI response. In a real implementation, this would connect to your AI service to provide intelligent responses about blockchain, DeFi, and Web3 topics.`,
+        content: `Sorry, I encountered an error while processing your request. ${axios.isAxiosError(error)
+          ? error.response?.data?.error || error.message
+          : 'Please try again later.'
+          }`,
         isUser: false,
         timestamp: new Date()
       }
 
-      setChats(prev => prev.map(chat => 
-        chat.id === activeChatId 
-          ? { 
-              ...chat, 
-              messages: [...chat.messages, aiMessage],
-              title: chat.title === 'New Chat' ? content.slice(0, 30) + (content.length > 30 ? '...' : '') : chat.title
-            }
+      setChats(prev => prev.map(chat =>
+        chat.id === activeChatId
+          ? {
+            ...chat,
+            messages: [...chat.messages, errorMessage],
+            title: chat.title === 'New Chat' ? content.slice(0, 30) + (content.length > 30 ? '...' : '') : chat.title
+          }
           : chat
       ))
-
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
 
   // Create initial chat if none exists
@@ -237,16 +350,16 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={handleAIAgentsListClick}
                 className="gap-2 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 border-blue-200"
               >
                 <Bot className="h-4 w-4" />
                 My Agents
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={handleCreateAgent}
                 className="gap-2"
               >

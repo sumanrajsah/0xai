@@ -71,6 +71,12 @@ app.use(
         [`^/${baseVersion}/agent`]: `/${baseVersion}/agent`,
     }))
 );
+app.use(
+    `/${baseVersion}/chat`,
+    createProxyMiddleware(standardProxyOptions('http://localhost:4004', {
+        [`^/${baseVersion}/chat`]: `/${baseVersion}/chat`,
+    }))
+);
 
 
 app.get('/health', (req, res) => {

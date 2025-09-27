@@ -19,6 +19,7 @@ import {
 import { MCP } from '@/lib/mcp'
 import axios from 'axios'
 import { useAuth } from '@/hooks/useAuth'
+import { auth } from '@modelcontextprotocol/sdk/client/auth.js'
 
 interface AddMCPServerPageProps {
   onBack: () => void
@@ -92,6 +93,7 @@ export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
       const server =
       {
         uri: serverInfo.uri,
+        auth: serverInfo.auth,
         header: {
           key: serverInfo.header?.key ?? '',
           value: serverInfo.header?.value ?? ''
@@ -191,7 +193,7 @@ export default function AddMCPServerPage({ onBack }: AddMCPServerPageProps) {
                 </>
               )}
             </Button>
-            <Button onClick={handleSave} disabled={formData.tools.length === 0} className="gap-2">
+            <Button onClick={handleSave} className="gap-2">
               <Save className="h-4 w-4" />
               Save
             </Button>
