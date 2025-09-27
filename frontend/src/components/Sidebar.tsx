@@ -15,7 +15,8 @@ import {
   Plus,
   Bot,
   Clock,
-  PlusCircle
+  PlusCircle,
+  BotIcon
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -31,7 +32,9 @@ export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId, 
 
   const sidebarItems = [
     { icon: MessageSquare, label: 'New Chat', action: onNewChat },
+    { icon: BotIcon, label: 'AI Agent', action: () => {} },
     { icon: PlusCircle, label: 'Create', action: onCreateClick || (() => {}) },
+
     { icon: History, label: 'History', action: () => {} },
     { icon: Settings, label: 'Settings', action: () => {} },
     { icon: HelpCircle, label: 'Help', action: () => {} },

@@ -6,25 +6,64 @@ import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Send, Bot, User, Loader2 } from 'lucide-react'
+import { Send, Bot, User, Loader2, ChevronDown, Settings, Plus, Image, FileText, X } from 'lucide-react'
 
 interface Message {
   id: string
   content: string
   isUser: boolean
   timestamp: Date
+  attachments?: File[]
+}
+
+interface Attachment {
+  id: string
+  file: File
+  type: 'image' | 'pdf'
+  preview?: string
 }
 
 interface ChatAreaProps {
   messages: Message[]
   onSendMessage: (message: string) => void
   isLoading: boolean
+  selectedModel?: string
+  selectedMCP?: string
+  onModelChange?: (model: string) => void
+  onMCPChange?: (mcp: string) => void
 }
 
-export default function ChatArea({ messages, onSendMessage, isLoading }: ChatAreaProps) {
+export default function ChatArea({ 
+  messages, 
+  onSendMessage, 
+  isLoading, 
+  selectedModel = 'gpt-4o-mini', 
+  selectedMCP = 'none',
+  onModelChange,
+  onMCPChange 
+}: ChatAreaProps) {
   const [inputValue, setInputValue] = useState('')
+  const [showModelDropdown, setShowModelDropdown] = useState(false)
+  const [showMCPDropdown, setShowMCPDropdown] = useState(false)
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [showUploadMenu, setShowUploadMenu] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const aiModels = [
+    { value: 'gpt-4o-mini', label: 'GPT-4o Mini', description: 'Fast and efficient' },
+    { value: 'gpt-4', label: 'GPT-4', description: 'Most capable model' },
+    { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo', description: 'Balanced performance' },
+    { value: 'claude-3-5-sonnet', label: 'Claude 3.5 Sonnet', description: 'Advanced reasoning' }
+  ]
+
+  const mcpServers = [
+    { value: 'none', label: 'No MCP Tools', description: 'Basic chat only' },
+    { value: 'web-search', label: 'Web Search', description: 'Real-time web search' },
+    { value: 'file-system', label: 'File System', description: 'File operations' },
+    { value: 'database', label: 'Database', description: 'Database queries' }
+  ]
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -36,10 +75,37 @@ export default function ChatArea({ messages, onSendMessage, isLoading }: ChatAre
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (inputValue.trim() && !isLoading) {
+    if ((inputValue.trim() || attachments.length > 0) && !isLoading) {
       onSendMessage(inputValue.trim())
       setInputValue('')
+      setAttachments([])
     }
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    const newAttachments: Attachment[] = files.map(file => {
+      const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+      const type = file.type.startsWith('image/') ? 'image' : 'pdf'
+      const attachment: Attachment = { id, file, type }
+      
+      if (type === 'image') {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          attachment.preview = e.target?.result as string
+        }
+        reader.readAsDataURL(file)
+      }
+      
+      return attachment
+    })
+    
+    setAttachments(prev => [...prev, ...newAttachments])
+    setShowUploadMenu(false)
+  }
+
+  const removeAttachment = (id: string) => {
+    setAttachments(prev => prev.filter(att => att.id !== id))
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -61,8 +127,24 @@ export default function ChatArea({ messages, onSendMessage, isLoading }: ChatAre
     adjustTextareaHeight()
   }, [inputValue])
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element
+      if (!target.closest('[data-dropdown]') && !target.closest('[data-upload-menu]')) {
+        setShowModelDropdown(false)
+        setShowMCPDropdown(false)
+        setShowUploadMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   return (
     <div className="flex flex-col h-full bg-background">
+
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
         {messages.length === 0 ? (
@@ -144,28 +226,259 @@ export default function ChatArea({ messages, onSendMessage, isLoading }: ChatAre
       </div>
 
       {/* Input Area */}
-      <div className="border-t p-4 flex-shrink-0">
-        <form onSubmit={handleSubmit} className="flex gap-3">
-          <div className="flex-1 relative">
-            <Textarea
-              ref={textareaRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask me anything about blockchain, DeFi, or Web3..."
-              className="min-h-[60px] max-h-[120px] resize-none pr-12"
-              disabled={isLoading}
-            />
+      <div className="border-t bg-gradient-to-r from-card to-card/95 backdrop-blur-sm p-4 flex-shrink-0">
+        {/* Dropdown Controls */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          {/* AI Model Dropdown */}
+          <div className="relative w-full sm:w-auto sm:min-w-[200px]" data-dropdown>
             <Button
-              type="submit"
+              variant="outline"
               size="sm"
-              disabled={!inputValue.trim() || isLoading}
-              className="absolute right-2 top-2 h-8 w-8 p-0"
+              onClick={() => {
+                setShowModelDropdown(!showModelDropdown)
+                setShowMCPDropdown(false)
+                setShowUploadMenu(false)
+              }}
+              className="gap-2 w-full sm:w-auto justify-between h-9 bg-background/50 backdrop-blur-sm border-2 hover:border-primary/30 transition-all duration-200"
             >
-              <Send className="h-4 w-4" />
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-400 to-blue-500"></div>
+                <span className="truncate font-medium text-sm">
+                  {aiModels.find(m => m.value === selectedModel)?.label || 'Select Model'}
+                </span>
+              </div>
+              <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showModelDropdown ? 'rotate-180' : ''}`} />
             </Button>
+            {showModelDropdown && (
+              <div className="absolute bottom-full left-0 right-0 sm:right-auto mb-2 w-full sm:w-80 bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div className="p-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                      <Bot className="h-3 w-3 text-white" />
+                    </div>
+                    <div className="text-xs font-bold text-foreground">AI Models</div>
+                  </div>
+                  <div className="space-y-1">
+                    {aiModels.map((model) => (
+                      <div
+                        key={model.value}
+                        onClick={() => {
+                          onModelChange?.(model.value)
+                          setShowModelDropdown(false)
+                        }}
+                        className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                          selectedModel === model.value 
+                            ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]' 
+                            : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm">{model.label}</div>
+                            <div className={`text-xs mt-1 ${selectedModel === model.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                              {model.description}
+                            </div>
+                          </div>
+                          {selectedModel === model.value && (
+                            <div className="w-4 h-4 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* MCP Tools Dropdown */}
+          <div className="relative w-full sm:w-auto sm:min-w-[200px]" data-dropdown>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowMCPDropdown(!showMCPDropdown)
+                setShowModelDropdown(false)
+                setShowUploadMenu(false)
+              }}
+              className="gap-2 w-full sm:w-auto justify-between h-9 bg-background/50 backdrop-blur-sm border-2 hover:border-primary/30 transition-all duration-200"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-orange-400 to-red-500"></div>
+                <span className="truncate font-medium text-sm">
+                  {mcpServers.find(m => m.value === selectedMCP)?.label || 'Select MCP'}
+                </span>
+              </div>
+              <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showMCPDropdown ? 'rotate-180' : ''}`} />
+            </Button>
+            {showMCPDropdown && (
+              <div className="absolute bottom-full left-0 right-0 sm:right-auto mb-2 w-full sm:w-80 bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div className="p-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-orange-600 to-red-600 flex items-center justify-center">
+                      <Settings className="h-3 w-3 text-white" />
+                    </div>
+                    <div className="text-xs font-bold text-foreground">MCP Tools</div>
+                  </div>
+                  <div className="space-y-1">
+                    {mcpServers.map((mcp) => (
+                      <div
+                        key={mcp.value}
+                        onClick={() => {
+                          onMCPChange?.(mcp.value)
+                          setShowMCPDropdown(false)
+                        }}
+                        className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                          selectedMCP === mcp.value 
+                            ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]' 
+                            : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm">{mcp.label}</div>
+                            <div className={`text-xs mt-1 ${selectedMCP === mcp.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                              {mcp.description}
+                            </div>
+                          </div>
+                          {selectedMCP === mcp.value && (
+                            <div className="w-4 h-4 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Attachments Preview */}
+        {attachments.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {attachments.map((attachment) => (
+              <div
+                key={attachment.id}
+                className="flex items-center gap-2 bg-muted/50 rounded-lg p-2 border"
+              >
+                {attachment.type === 'image' && attachment.preview ? (
+                  <img
+                    src={attachment.preview}
+                    alt="Preview"
+                    className="w-8 h-8 rounded object-cover"
+                  />
+                ) : (
+                  <FileText className="w-8 h-8 text-muted-foreground" />
+                )}
+                <span className="text-sm font-medium truncate max-w-[120px]">
+                  {attachment.file.name}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeAttachment(attachment.id)}
+                  className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Input Form */}
+        <form onSubmit={handleSubmit} className="flex gap-3">
+          {/* Upload Button - Left Side */}
+          <div className="relative" data-upload-menu>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setShowUploadMenu(!showUploadMenu)
+                setShowModelDropdown(false)
+                setShowMCPDropdown(false)
+              }}
+              className="h-12 w-12 p-0 hover:bg-primary/10 hover:border-primary/30 transition-all duration-200 rounded-xl border-2 bg-background/50 backdrop-blur-sm"
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+            
+            {showUploadMenu && (
+              <div className="absolute bottom-full left-0 mb-2 w-48 bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div className="p-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      fileInputRef.current?.click()
+                      setShowUploadMenu(false)
+                    }}
+                    className="w-full justify-start gap-2 hover:bg-primary/10"
+                  >
+                    <Image className="h-4 w-4" />
+                    Upload Images
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      fileInputRef.current?.click()
+                      setShowUploadMenu(false)
+                    }}
+                    className="w-full justify-start gap-2 hover:bg-primary/10"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Upload PDFs
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Input Area */}
+          <div className="flex-1 relative">
+            <div className="relative bg-gradient-to-r from-background/80 to-background/60 backdrop-blur-sm border-2 border-border/50 hover:border-primary/30 focus-within:border-primary/50 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl">
+              <Textarea
+                ref={textareaRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask me anything about blockchain, DeFi, or Web3..."
+                className="min-h-[60px] max-h-[120px] resize-none pr-14 pl-4 py-4 bg-transparent border-0 focus:ring-0 focus:outline-none placeholder:text-muted-foreground/70 text-foreground"
+                disabled={isLoading}
+              />
+              
+              {/* Send Button */}
+              <Button
+                type="submit"
+                size="sm"
+                disabled={(!inputValue.trim() && attachments.length === 0) || isLoading}
+                className="absolute right-2 top-2 h-8 w-8 p-0 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </form>
+
+        {/* Hidden File Input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf"
+          multiple
+          onChange={handleFileUpload}
+          className="hidden"
+        />
       </div>
     </div>
   )

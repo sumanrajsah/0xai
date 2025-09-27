@@ -33,6 +33,8 @@ export default function Dashboard() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
+  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini')
+  const [selectedMCP, setSelectedMCP] = useState('none')
 
   const currentChat = chats.find(chat => chat.id === activeChatId)
   const messages = currentChat?.messages || []
@@ -191,22 +193,32 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="bg-card border-b px-6 py-4 flex-shrink-0">
-          <div className="flex items-center justify-between">
+        <header className="bg-gradient-to-r from-card to-card/95 backdrop-blur-sm border-b px-6 py-5 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-6 w-6 text-primary" />
-                <h1 className="text-xl font-semibold">
-                  {currentChat?.title || '0xAI Chat'}
-                </h1>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                  <MessageSquare className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                    {currentChat?.title || '0xAI Chat'}
+                  </h1>
+                  {currentChat && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="text-xs font-medium">
+                        {currentChat.messages.length} messages
+                      </Badge>
+                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-400 to-blue-500"></div>
+                      <span className="text-xs text-muted-foreground">Active</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              {currentChat && (
-                <Badge variant="secondary" className="text-xs">
-                  {currentChat.messages.length} messages
-                </Badge>
-              )}
             </div>
-            <WalletConnectButton />
+            <div className="flex items-center gap-3">
+              <WalletConnectButton />
+            </div>
           </div>
         </header>
 
@@ -216,6 +228,10 @@ export default function Dashboard() {
             messages={messages}
             onSendMessage={sendMessage}
             isLoading={isLoading}
+            selectedModel={selectedModel}
+            selectedMCP={selectedMCP}
+            onModelChange={setSelectedModel}
+            onMCPChange={setSelectedMCP}
           />
         </div>
       </div>
