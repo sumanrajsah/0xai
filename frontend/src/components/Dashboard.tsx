@@ -6,11 +6,13 @@ import Sidebar from '@/components/Sidebar'
 import ChatArea from '@/components/ChatArea'
 import CreatePage from '@/components/CreatePage'
 import AIAgentPage from '@/components/AIAgentPage'
+import AIAgentsListPage from '@/components/AIAgentsListPage'
 import MCPToolsPage from '@/components/MCPToolsPage'
 import AddMCPServerPage from '@/components/AddMCPServerPage'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { MessageSquare, Bot, Plus } from 'lucide-react'
 
 interface Message {
   id: string
@@ -26,7 +28,7 @@ interface Chat {
   timestamp: Date
 }
 
-type Page = 'dashboard' | 'create' | 'ai-agent' | 'mcp-tools' | 'add-mcp-server'
+type Page = 'dashboard' | 'create' | 'ai-agent' | 'ai-agents-list' | 'mcp-tools' | 'add-mcp-server'
 
 export default function Dashboard() {
   const [chats, setChats] = useState<Chat[]>([])
@@ -117,6 +119,10 @@ export default function Dashboard() {
     setCurrentPage('ai-agent')
   }
 
+  const handleAIAgentsListClick = () => {
+    setCurrentPage('ai-agents-list')
+  }
+
   const handleMCPToolsClick = () => {
     setCurrentPage('mcp-tools')
   }
@@ -141,6 +147,10 @@ export default function Dashboard() {
     setCurrentPage('dashboard')
   }
 
+  const handleCreateAgent = () => {
+    setCurrentPage('ai-agent')
+  }
+
   // Render different pages based on current page
   if (currentPage === 'create') {
     return (
@@ -157,6 +167,15 @@ export default function Dashboard() {
       <AIAgentPage
         onBack={handleBackToCreate}
         onAskInChat={handleAskInChat}
+      />
+    )
+  }
+
+  if (currentPage === 'ai-agents-list') {
+    return (
+      <AIAgentsListPage
+        onBack={handleBackToDashboard}
+        onCreateAgent={handleCreateAgent}
       />
     )
   }
@@ -188,6 +207,7 @@ export default function Dashboard() {
         chats={chats}
         activeChatId={activeChatId}
         onCreateClick={handleCreateClick}
+        onAIAgentsClick={handleAIAgentsListClick}
       />
 
       {/* Main Content */}
@@ -217,6 +237,22 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                onClick={handleAIAgentsListClick}
+                className="gap-2 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 border-blue-200"
+              >
+                <Bot className="h-4 w-4" />
+                My Agents
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleCreateAgent}
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Create Agent
+              </Button>
               <WalletConnectButton />
             </div>
           </div>

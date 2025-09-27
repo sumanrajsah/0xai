@@ -25,14 +25,15 @@ interface SidebarProps {
   chats: Array<{ id: string; title: string; timestamp: Date }>
   activeChatId: string | null
   onCreateClick?: () => void
+  onAIAgentsClick?: () => void
 }
 
-export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId, onCreateClick }: SidebarProps) {
+export default function Sidebar({ onNewChat, onSelectChat, chats, activeChatId, onCreateClick, onAIAgentsClick }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const sidebarItems = [
     { icon: MessageSquare, label: 'New Chat', action: onNewChat },
-    { icon: BotIcon, label: 'AI Agent', action: () => {} },
+    { icon: BotIcon, label: 'AI Agents', action: onAIAgentsClick || (() => {}) },
     { icon: PlusCircle, label: 'Create', action: onCreateClick || (() => {}) },
 
     { icon: History, label: 'History', action: () => {} },

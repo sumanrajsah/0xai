@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Send, Bot, User, Loader2, ChevronDown, Settings, Plus, Image, FileText, X } from 'lucide-react'
+import { Send, Bot, User, Loader2, ChevronDown, Settings, Plus, Image, FileText, X, Wrench, Globe } from 'lucide-react'
 
 interface Message {
   id: string
@@ -29,8 +29,12 @@ interface ChatAreaProps {
   isLoading: boolean
   selectedModel?: string
   selectedMCP?: string
+  selectedAITool?: string
+  selectedLanguage?: string
   onModelChange?: (model: string) => void
   onMCPChange?: (mcp: string) => void
+  onAIToolChange?: (tool: string) => void
+  onLanguageChange?: (language: string) => void
 }
 
 export default function ChatArea({ 
@@ -39,12 +43,18 @@ export default function ChatArea({
   isLoading, 
   selectedModel = 'gpt-4o-mini', 
   selectedMCP = 'none',
+  selectedAITool = 'none',
+  selectedLanguage = 'english',
   onModelChange,
-  onMCPChange 
+  onMCPChange,
+  onAIToolChange,
+  onLanguageChange
 }: ChatAreaProps) {
   const [inputValue, setInputValue] = useState('')
   const [showModelDropdown, setShowModelDropdown] = useState(false)
   const [showMCPDropdown, setShowMCPDropdown] = useState(false)
+  const [showAIToolDropdown, setShowAIToolDropdown] = useState(false)
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [showUploadMenu, setShowUploadMenu] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -63,6 +73,28 @@ export default function ChatArea({
     { value: 'web-search', label: 'Web Search', description: 'Real-time web search' },
     { value: 'file-system', label: 'File System', description: 'File operations' },
     { value: 'database', label: 'Database', description: 'Database queries' }
+  ]
+
+  const aiTools = [
+    { value: 'none', label: 'No AI Tools', description: 'Basic chat only' },
+    { value: 'code-generator', label: 'Code Generator', description: 'Generate code snippets' },
+    { value: 'text-analyzer', label: 'Text Analyzer', description: 'Analyze and summarize text' },
+    { value: 'image-generator', label: 'Image Generator', description: 'Generate images from text' },
+    { value: 'data-visualizer', label: 'Data Visualizer', description: 'Create charts and graphs' },
+    { value: 'translator', label: 'Translator', description: 'Translate between languages' }
+  ]
+
+  const languages = [
+    { value: 'english', label: 'English', description: 'Default language' },
+    { value: 'spanish', label: 'Spanish', description: 'Español' },
+    { value: 'french', label: 'French', description: 'Français' },
+    { value: 'german', label: 'German', description: 'Deutsch' },
+    { value: 'chinese', label: 'Chinese', description: '中文' },
+    { value: 'japanese', label: 'Japanese', description: '日本語' },
+    { value: 'korean', label: 'Korean', description: '한국어' },
+    { value: 'arabic', label: 'Arabic', description: 'العربية' },
+    { value: 'hindi', label: 'Hindi', description: 'हिन्दी' },
+    { value: 'portuguese', label: 'Portuguese', description: 'Português' }
   ]
 
   const scrollToBottom = () => {
@@ -134,6 +166,8 @@ export default function ChatArea({
       if (!target.closest('[data-dropdown]') && !target.closest('[data-upload-menu]')) {
         setShowModelDropdown(false)
         setShowMCPDropdown(false)
+        setShowAIToolDropdown(false)
+        setShowLanguageDropdown(false)
         setShowUploadMenu(false)
       }
     }
@@ -227,30 +261,35 @@ export default function ChatArea({
 
       {/* Input Area */}
       <div className="border-t bg-gradient-to-r from-card to-card/95 backdrop-blur-sm p-4 flex-shrink-0">
-        {/* Dropdown Controls */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-          {/* AI Model Dropdown */}
-          <div className="relative w-full sm:w-auto sm:min-w-[200px]" data-dropdown>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setShowModelDropdown(!showModelDropdown)
-                setShowMCPDropdown(false)
-                setShowUploadMenu(false)
-              }}
-              className="gap-2 w-full sm:w-auto justify-between h-9 bg-background/50 backdrop-blur-sm border-2 hover:border-primary/30 transition-all duration-200"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-400 to-blue-500"></div>
-                <span className="truncate font-medium text-sm">
-                  {aiModels.find(m => m.value === selectedModel)?.label || 'Select Model'}
-                </span>
-              </div>
-              <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showModelDropdown ? 'rotate-180' : ''}`} />
-            </Button>
+        {/* Input Container with Integrated Dropdowns */}
+        <div className="relative bg-gradient-to-r from-background/80 to-background/60 backdrop-blur-sm border-2 border-border/50 hover:border-primary/30 focus-within:border-primary/50 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl">
+          {/* Dropdown Controls - Integrated */}
+          <div className="p-3 pb-2">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+              {/* AI Model Dropdown */}
+              <div className="relative" data-dropdown>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowModelDropdown(!showModelDropdown)
+                    setShowMCPDropdown(false)
+                    setShowAIToolDropdown(false)
+                    setShowLanguageDropdown(false)
+                    setShowUploadMenu(false)
+                  }}
+                  className="gap-1.5 w-full justify-between h-8 bg-muted/30 hover:bg-muted/50 border border-border/30 hover:border-primary/40 transition-all duration-200 rounded-lg text-xs"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-green-400 to-blue-500"></div>
+                    <span className="truncate font-medium">
+                      {aiModels.find(m => m.value === selectedModel)?.label || 'Model'}
+                    </span>
+                  </div>
+                  <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showModelDropdown ? 'rotate-180' : ''}`} />
+                </Button>
             {showModelDropdown && (
-              <div className="absolute bottom-full left-0 right-0 sm:right-auto mb-2 w-full sm:w-80 bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+              <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
                 <div className="p-3">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
@@ -293,28 +332,30 @@ export default function ChatArea({
             )}
           </div>
 
-          {/* MCP Tools Dropdown */}
-          <div className="relative w-full sm:w-auto sm:min-w-[200px]" data-dropdown>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setShowMCPDropdown(!showMCPDropdown)
-                setShowModelDropdown(false)
-                setShowUploadMenu(false)
-              }}
-              className="gap-2 w-full sm:w-auto justify-between h-9 bg-background/50 backdrop-blur-sm border-2 hover:border-primary/30 transition-all duration-200"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-orange-400 to-red-500"></div>
-                <span className="truncate font-medium text-sm">
-                  {mcpServers.find(m => m.value === selectedMCP)?.label || 'Select MCP'}
-                </span>
-              </div>
-              <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showMCPDropdown ? 'rotate-180' : ''}`} />
-            </Button>
+              {/* MCP Tools Dropdown */}
+              <div className="relative" data-dropdown>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowMCPDropdown(!showMCPDropdown)
+                    setShowModelDropdown(false)
+                    setShowAIToolDropdown(false)
+                    setShowLanguageDropdown(false)
+                    setShowUploadMenu(false)
+                  }}
+                  className="gap-1.5 w-full justify-between h-8 bg-muted/30 hover:bg-muted/50 border border-border/30 hover:border-primary/40 transition-all duration-200 rounded-lg text-xs"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-orange-400 to-red-500"></div>
+                    <span className="truncate font-medium">
+                      {mcpServers.find(m => m.value === selectedMCP)?.label || 'MCP'}
+                    </span>
+                  </div>
+                  <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showMCPDropdown ? 'rotate-180' : ''}`} />
+                </Button>
             {showMCPDropdown && (
-              <div className="absolute bottom-full left-0 right-0 sm:right-auto mb-2 w-full sm:w-80 bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+              <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
                 <div className="p-3">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-orange-600 to-red-600 flex items-center justify-center">
@@ -356,44 +397,177 @@ export default function ChatArea({
               </div>
             )}
           </div>
-        </div>
 
-        {/* Attachments Preview */}
-        {attachments.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-2">
-            {attachments.map((attachment) => (
-              <div
-                key={attachment.id}
-                className="flex items-center gap-2 bg-muted/50 rounded-lg p-2 border"
-              >
-                {attachment.type === 'image' && attachment.preview ? (
-                  <img
-                    src={attachment.preview}
-                    alt="Preview"
-                    className="w-8 h-8 rounded object-cover"
-                  />
-                ) : (
-                  <FileText className="w-8 h-8 text-muted-foreground" />
-                )}
-                <span className="text-sm font-medium truncate max-w-[120px]">
-                  {attachment.file.name}
-                </span>
+              {/* AI Tools Dropdown */}
+              <div className="relative" data-dropdown>
                 <Button
-                  type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => removeAttachment(attachment.id)}
-                  className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                  onClick={() => {
+                    setShowAIToolDropdown(!showAIToolDropdown)
+                    setShowModelDropdown(false)
+                    setShowMCPDropdown(false)
+                    setShowLanguageDropdown(false)
+                    setShowUploadMenu(false)
+                  }}
+                  className="gap-1.5 w-full justify-between h-8 bg-muted/30 hover:bg-muted/50 border border-border/30 hover:border-primary/40 transition-all duration-200 rounded-lg text-xs"
                 >
-                  <X className="h-3 w-3" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-purple-400 to-pink-500"></div>
+                    <span className="truncate font-medium">
+                      {aiTools.find(t => t.value === selectedAITool)?.label || 'AI Tool'}
+                    </span>
+                  </div>
+                  <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showAIToolDropdown ? 'rotate-180' : ''}`} />
                 </Button>
+            {showAIToolDropdown && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div className="p-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+                      <Wrench className="h-3 w-3 text-white" />
+                    </div>
+                    <div className="text-xs font-bold text-foreground">AI Tools</div>
+                  </div>
+                  <div className="space-y-1">
+                    {aiTools.map((tool) => (
+                      <div
+                        key={tool.value}
+                        onClick={() => {
+                          onAIToolChange?.(tool.value)
+                          setShowAIToolDropdown(false)
+                        }}
+                        className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                          selectedAITool === tool.value 
+                            ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]' 
+                            : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm">{tool.label}</div>
+                            <div className={`text-xs mt-1 ${selectedAITool === tool.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                              {tool.description}
+                            </div>
+                          </div>
+                          {selectedAITool === tool.value && (
+                            <div className="w-4 h-4 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            ))}
+            )}
           </div>
-        )}
 
-        {/* Input Form */}
-        <form onSubmit={handleSubmit} className="flex gap-3">
+              {/* Languages Dropdown */}
+              <div className="relative" data-dropdown>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowLanguageDropdown(!showLanguageDropdown)
+                    setShowModelDropdown(false)
+                    setShowMCPDropdown(false)
+                    setShowAIToolDropdown(false)
+                    setShowUploadMenu(false)
+                  }}
+                  className="gap-1.5 w-full justify-between h-8 bg-muted/30 hover:bg-muted/50 border border-border/30 hover:border-primary/40 transition-all duration-200 rounded-lg text-xs"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500"></div>
+                    <span className="truncate font-medium">
+                      {languages.find(l => l.value === selectedLanguage)?.label || 'Language'}
+                    </span>
+                  </div>
+                  <ChevronDown className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showLanguageDropdown ? 'rotate-180' : ''}`} />
+                </Button>
+            {showLanguageDropdown && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 w-full bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div className="p-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 flex items-center justify-center">
+                      <Globe className="h-3 w-3 text-white" />
+                    </div>
+                    <div className="text-xs font-bold text-foreground">Languages</div>
+                  </div>
+                  <div className="space-y-1">
+                    {languages.map((language) => (
+                      <div
+                        key={language.value}
+                        onClick={() => {
+                          onLanguageChange?.(language.value)
+                          setShowLanguageDropdown(false)
+                        }}
+                        className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                          selectedLanguage === language.value 
+                            ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-[1.02]' 
+                            : 'hover:bg-muted/80 hover:shadow-md hover:scale-[1.01]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm">{language.label}</div>
+                            <div className={`text-xs mt-1 ${selectedLanguage === language.value ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                              {language.description}
+                            </div>
+                          </div>
+                          {selectedLanguage === language.value && (
+                            <div className="w-4 h-4 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground"></div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+            </div>
+          </div>
+
+          {/* Attachments Preview */}
+          {attachments.length > 0 && (
+            <div className="px-3 pb-2 flex flex-wrap gap-2">
+              {attachments.map((attachment) => (
+                <div
+                  key={attachment.id}
+                  className="flex items-center gap-2 bg-muted/50 rounded-lg p-2 border"
+                >
+                  {attachment.type === 'image' && attachment.preview ? (
+                    <img
+                      src={attachment.preview}
+                      alt="Preview"
+                      className="w-8 h-8 rounded object-cover"
+                    />
+                  ) : (
+                    <FileText className="w-8 h-8 text-muted-foreground" />
+                  )}
+                  <span className="text-sm font-medium truncate max-w-[120px]">
+                    {attachment.file.name}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeAttachment(attachment.id)}
+                    className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Input Form */}
+          <form onSubmit={handleSubmit} className="flex gap-3 p-3 pt-0">
           {/* Upload Button - Left Side */}
           <div className="relative" data-upload-menu>
             <Button
@@ -404,6 +578,8 @@ export default function ChatArea({
                 setShowUploadMenu(!showUploadMenu)
                 setShowModelDropdown(false)
                 setShowMCPDropdown(false)
+                setShowAIToolDropdown(false)
+                setShowLanguageDropdown(false)
               }}
               className="h-12 w-12 p-0 hover:bg-primary/10 hover:border-primary/30 transition-all duration-200 rounded-xl border-2 bg-background/50 backdrop-blur-sm"
             >
@@ -444,9 +620,8 @@ export default function ChatArea({
             )}
           </div>
 
-          {/* Input Area */}
-          <div className="flex-1 relative">
-            <div className="relative bg-gradient-to-r from-background/80 to-background/60 backdrop-blur-sm border-2 border-border/50 hover:border-primary/30 focus-within:border-primary/50 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl">
+            {/* Input Area */}
+            <div className="flex-1 relative">
               <Textarea
                 ref={textareaRef}
                 value={inputValue}
@@ -467,8 +642,8 @@ export default function ChatArea({
                 <Send className="h-4 w-4" />
               </Button>
             </div>
-          </div>
         </form>
+        </div>
 
         {/* Hidden File Input */}
         <input
