@@ -9,37 +9,27 @@ import { Separator } from '@/components/ui/separator'
 import {
   ArrowLeft,
   Bot,
-  Search,
-  Plus,
-  MessageSquare,
-  Settings,
-  Play,
-  MoreVertical,
-  Star,
   Users,
-  Clock,
-  Zap,
-  Shield,
-  Globe,
-  Code,
-  Brain,
-  Sparkles,
-  TrendingUp,
+  Tag,
+  CheckCircle,
+  Upload,
+  X,
+  Search,
   Filter,
   Grid3X3,
   List,
-  ChevronDown,
-  X,
-  Tag,
-  CheckCircle,
-  Upload
+  Settings,
+  Play,
+  Star,
+  MessageSquare,
+  Shield,
+  Clock,
+  Zap
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import axios from 'axios'
 
-interface AIAgentsListPageProps {
+interface MyAgentsPageProps {
   onBack: () => void
-  onCreateAgent: () => void
 }
 
 interface AIAgent {
@@ -61,99 +51,9 @@ interface AIAgent {
   isVerified: boolean
 }
 
-const mockAgents: AIAgent[] = [
-  {
-    id: '1',
-    name: 'DeFi Assistant',
-    handle: '@defi-assistant',
-    description: 'Expert in decentralized finance, yield farming, and liquidity protocols. Helps users navigate the complex world of DeFi.',
-    category: 'Finance',
-    tags: ['DeFi', 'Yield Farming', 'Liquidity', 'AMM'],
-    status: 'active',
-    model: 'GPT-4',
-    conversations: 1247,
-    rating: 4.8,
-    createdAt: new Date('2024-01-15'),
-    lastUsed: new Date('2024-01-20'),
-    tools: ['Web Search', 'Price Analysis', 'Portfolio Tracker'],
-    isPublic: true,
-    isVerified: true
-  },
-  {
-    id: '2',
-    name: 'Smart Contract Auditor',
-    handle: '@audit-bot',
-    description: 'Specialized in smart contract security analysis and vulnerability detection. Provides comprehensive audit reports.',
-    category: 'Security',
-    tags: ['Security', 'Audit', 'Solidity', 'Vulnerability'],
-    status: 'active',
-    model: 'Claude 3.5 Sonnet',
-    conversations: 892,
-    rating: 4.9,
-    createdAt: new Date('2024-01-10'),
-    lastUsed: new Date('2024-01-19'),
-    tools: ['Code Analysis', 'Security Scanner', 'Gas Optimizer'],
-    isPublic: true,
-    isVerified: true
-  },
-  {
-    id: '3',
-    name: 'NFT Market Analyst',
-    handle: '@nft-analyst',
-    description: 'Tracks NFT market trends, floor prices, and collection analytics. Provides insights for NFT trading and investment.',
-    category: 'Analytics',
-    tags: ['NFT', 'Analytics'],
-    status: 'active',
-    model: 'GPT-4o Mini',
-    conversations: 654,
-    rating: 4.6,
-    createdAt: new Date('2024-01-12'),
-    lastUsed: new Date('2024-01-18'),
-    tools: ['Market Data', 'Price Tracker', 'Collection Scanner'],
-    isPublic: false,
-    isVerified: false
-  },
-  {
-    id: '4',
-    name: 'Cross-Chain Bridge Guide',
-    handle: '@bridge-guide',
-    description: 'Helps users navigate cross-chain transactions and bridge assets between different blockchains safely.',
-    category: 'Infrastructure',
-    tags: ['Cross-Chain', 'Bridge', 'Multi-Chain', 'Interoperability'],
-    status: 'training',
-    model: 'GPT-4',
-    conversations: 0,
-    rating: 0,
-    createdAt: new Date('2024-01-20'),
-    tools: ['Bridge Scanner', 'Gas Calculator', 'Route Optimizer'],
-    isPublic: true,
-    isVerified: false
-  },
-  {
-    id: '5',
-    name: 'DAO Governance Expert',
-    handle: '@dao-expert',
-    description: 'Specialized in DAO governance, proposal analysis, and voting strategies. Helps communities make informed decisions.',
-    category: 'Governance',
-    tags: ['DAO', 'Governance', 'Voting', 'Proposals'],
-    status: 'active',
-    model: 'Claude 3.5 Sonnet',
-    conversations: 423,
-    rating: 4.7,
-    createdAt: new Date('2024-01-08'),
-    lastUsed: new Date('2024-01-17'),
-    tools: ['Proposal Analyzer', 'Voting Tracker', 'Community Insights'],
-    isPublic: true,
-    isVerified: true
-  }
-]
-
-const categories = ['All', 'Finance', 'Security', 'Analytics', 'Infrastructure', 'Governance', 'Trading', 'Development']
-
-// Mock user agents (private agents)
 const mockUserAgents: AIAgent[] = [
   {
-    id: 'user-1',
+    id: '1',
     name: 'Personal DeFi Tracker',
     handle: '@my-defi-tracker',
     description: 'My personal DeFi portfolio tracker and yield farming assistant.',
@@ -170,7 +70,7 @@ const mockUserAgents: AIAgent[] = [
     isVerified: false
   },
   {
-    id: 'user-2',
+    id: '2',
     name: 'NFT Collection Manager',
     handle: '@my-nft-manager',
     description: 'Manages my NFT collection and tracks floor prices.',
@@ -187,7 +87,7 @@ const mockUserAgents: AIAgent[] = [
     isVerified: false
   },
   {
-    id: 'user-3',
+    id: '3',
     name: 'Smart Contract Helper',
     handle: '@my-contract-helper',
     description: 'Helps me understand and interact with smart contracts.',
@@ -204,22 +104,24 @@ const mockUserAgents: AIAgent[] = [
   }
 ]
 
-export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsListPageProps) {
+const categories = ['Finance', 'Security', 'Analytics', 'Infrastructure', 'Governance', 'Trading', 'Development']
+
+export default function MyAgentsPage({ onBack }: MyAgentsPageProps) {
   const { user, isAuthLoading } = useAuth()
-  const [agents, setAgents] = useState<AIAgent[]>(mockAgents)
-  const [filteredAgents, setFilteredAgents] = useState<AIAgent[]>(mockAgents)
+  const [agents, setAgents] = useState<AIAgent[]>(mockUserAgents)
+  const [filteredAgents, setFilteredAgents] = useState<AIAgent[]>(mockUserAgents)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'rating'>('recent')
   
-  // My Agents dropdown functionality
-  const [showMyAgentsDropdown, setShowMyAgentsDropdown] = useState(false)
+  // Publishing functionality
   const [selectedAgent, setSelectedAgent] = useState<AIAgent | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [isPublishing, setIsPublishing] = useState(false)
+  const [showPublishForm, setShowPublishForm] = useState(false)
 
   // Filter and search logic
   useEffect(() => {
@@ -256,24 +158,6 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
     setFilteredAgents(filtered)
   }, [agents, searchQuery, selectedCategory, sortBy])
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element
-      if (!target.closest('[data-my-agents-dropdown]')) {
-        setShowMyAgentsDropdown(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  const handleAgentClick = (agent: AIAgent) => {
-    // Navigate to agent details or start conversation
-    console.log('Selected agent:', agent)
-  }
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -300,7 +184,7 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
     }
   }
 
-  // My Agents dropdown helper functions
+  // Publishing functionality helpers
   const handleAddTag = () => {
     if (tagInput.trim() && selectedTags.length < 3 && !selectedTags.includes(tagInput.trim())) {
       setSelectedTags([...selectedTags, tagInput.trim()])
@@ -344,7 +228,7 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
       setSelectedAgent(null)
       setSelectedTags([])
       setSelectedCategories([])
-      setShowMyAgentsDropdown(false)
+      setShowPublishForm(false)
       
       console.log('Agent published successfully:', updatedAgent)
     } catch (error) {
@@ -354,13 +238,22 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
     }
   }
 
+  const handleAgentClick = (agent: AIAgent) => {
+    // Navigate to agent details or start conversation
+    console.log('Selected agent:', agent)
+  }
+
+  const handlePublishAgent = (agent: AIAgent) => {
+    setSelectedAgent(agent)
+    setShowPublishForm(true)
+  }
 
   if (isAuthLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <div>Loading AI Agents...</div>
+          <div>Loading My Agents...</div>
         </div>
       </div>
     )
@@ -377,154 +270,13 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
               Back
             </Button>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Bot className="h-5 w-5 text-white" />
+              <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
+                <Users className="h-5 w-5 text-white" />
               </div>
-              <h1 className="text-2xl font-bold">AI Agents</h1>
+              <h1 className="text-2xl font-bold">My Agents</h1>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {/* My Agents Dropdown */}
-            <div className="relative" data-my-agents-dropdown>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowMyAgentsDropdown(!showMyAgentsDropdown)}
-                className="gap-2"
-              >
-                <Users className="h-4 w-4" />
-                My Agents
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showMyAgentsDropdown ? 'rotate-180' : ''}`} />
-              </Button>
-              
-              {showMyAgentsDropdown && (
-                <div className="absolute top-full right-0 mt-2 w-96 bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50 animate-in slide-in-from-top-2 duration-200">
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
-                        <Users className="h-3 w-3 text-white" />
-                      </div>
-                      <div className="text-sm font-bold text-foreground">Publish Your Agent</div>
-                    </div>
-                    
-                    {/* Agent Selection */}
-                    <div className="mb-4">
-                      <label className="text-xs font-medium text-muted-foreground mb-2 block">Select Agent</label>
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {mockUserAgents.map((agent) => (
-                          <div
-                            key={agent.id}
-                            onClick={() => setSelectedAgent(agent)}
-                            className={`p-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                              selectedAgent?.id === agent.id 
-                                ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground' 
-                                : 'hover:bg-muted/80'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
-                                <Bot className="h-3 w-3 text-white" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="font-semibold text-sm">{agent.name}</div>
-                                <div className="text-xs opacity-80">{agent.handle}</div>
-                              </div>
-                              {selectedAgent?.id === agent.id && (
-                                <CheckCircle className="h-4 w-4" />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Tags Input */}
-                    <div className="mb-4">
-                      <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        Tags (Max 3)
-                      </label>
-                      <div className="flex gap-2 mb-2">
-                        <Input
-                          placeholder="Add a tag..."
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-                          className="flex-1 h-8 text-sm"
-                          disabled={selectedTags.length >= 3}
-                        />
-                        <Button 
-                          size="sm" 
-                          onClick={handleAddTag}
-                          disabled={!tagInput.trim() || selectedTags.length >= 3}
-                          className="h-8 px-3"
-                        >
-                          <Tag className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {selectedTags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs gap-1">
-                            {tag}
-                            <X 
-                              className="h-3 w-3 cursor-pointer hover:text-destructive" 
-                              onClick={() => handleRemoveTag(tag)}
-                            />
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Category Selection */}
-                    <div className="mb-4">
-                      <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        AI Model Categories
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {categories.filter(cat => cat !== 'All').map((category) => (
-                          <Button
-                            key={category}
-                            variant={selectedCategories.includes(category) ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handleCategoryToggle(category)}
-                            className="h-8 text-xs justify-start"
-                          >
-                            {selectedCategories.includes(category) && (
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                            )}
-                            {category}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Publish Button */}
-                    <Button 
-                      onClick={handlePublish}
-                      disabled={!selectedAgent || selectedTags.length === 0 || selectedCategories.length === 0 || isPublishing}
-                      className="w-full gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                    >
-                      {isPublishing ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          Publishing...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-4 w-4" />
-                          Publish Agent
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-
          
-            <Button onClick={onCreateAgent} className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-              <Plus className="h-4 w-4" />
-              Create Agent
-            </Button>
-          </div>
         </div>
       </header>
 
@@ -538,7 +290,7 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search agents by name, description, or tags..."
+                  placeholder="Search your agents..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 h-11"
@@ -561,6 +313,14 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
 
             {/* Category Filters */}
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant={selectedCategory === 'All' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory('All')}
+                className="h-8"
+              >
+                All
+              </Button>
               {categories.map((category) => (
                 <Button
                   key={category}
@@ -585,13 +345,9 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
               <p className="text-muted-foreground mb-4">
                 {searchQuery || selectedCategory !== 'All' 
                   ? 'Try adjusting your search or filter criteria'
-                  : 'Create your first AI agent to get started'
+                  : 'You haven\'t created any agents yet'
                 }
               </p>
-              <Button onClick={onCreateAgent} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Create Agent
-              </Button>
             </Card>
           ) : (
             <div className={viewMode === 'grid' 
@@ -609,7 +365,7 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
                   <CardHeader className={viewMode === 'list' ? 'flex-1' : ''}>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-blue-600 rounded-xl flex items-center justify-center">
                           <Bot className="h-6 w-6 text-white" />
                         </div>
                         <div>
@@ -686,6 +442,18 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
                         <Play className="h-4 w-4" />
                         Start Chat
                       </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handlePublishAgent(agent)
+                        }}
+                        className="gap-2"
+                      >
+                        <Upload className="h-4 w-4" />
+                        Publish
+                      </Button>
                       <Button size="sm" variant="outline">
                         <Settings className="h-4 w-4" />
                       </Button>
@@ -697,6 +465,135 @@ export default function AIAgentsListPage({ onBack, onCreateAgent }: AIAgentsList
           )}
         </div>
       </div>
+
+      {/* Publish Form Modal */}
+      {showPublishForm && selectedAgent && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
+                    <Upload className="h-3 w-3 text-white" />
+                  </div>
+                  <CardTitle>Publish Agent</CardTitle>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowPublishForm(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <CardDescription>
+                Make your agent public and discoverable by the community
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              {/* Selected Agent Info */}
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
+                    <Bot className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{selectedAgent.name}</h3>
+                    <p className="text-sm text-muted-foreground">{selectedAgent.handle}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tags Input */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Additional Tags (Max 3)
+                </label>
+                <div className="flex gap-2 mb-2">
+                  <Input
+                    placeholder="Add a tag..."
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+                    className="flex-1"
+                    disabled={selectedTags.length >= 3}
+                  />
+                  <Button 
+                    size="sm" 
+                    onClick={handleAddTag}
+                    disabled={!tagInput.trim() || selectedTags.length >= 3}
+                  >
+                    <Tag className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedTags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="gap-1">
+                      {tag}
+                      <X 
+                        className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                        onClick={() => handleRemoveTag(tag)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category Selection */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Categories
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {categories.map((category) => (
+                    <Button
+                      key={category}
+                      variant={selectedCategories.includes(category) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleCategoryToggle(category)}
+                      className="justify-start"
+                    >
+                      {selectedCategories.includes(category) && (
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                      )}
+                      {category}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Publish Button */}
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowPublishForm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handlePublish}
+                  disabled={selectedTags.length === 0 || selectedCategories.length === 0 || isPublishing}
+                  className="flex-1 gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                >
+                  {isPublishing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Publishing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" />
+                      Publish Agent
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

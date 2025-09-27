@@ -297,7 +297,7 @@ export default function ChatArea({
                     </div>
                     <div className="text-xs font-bold text-foreground">AI Models</div>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
                     {aiModels.map((model) => (
                       <div
                         key={model.value}
@@ -363,7 +363,7 @@ export default function ChatArea({
                     </div>
                     <div className="text-xs font-bold text-foreground">MCP Tools</div>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
                     {mcpServers.map((mcp) => (
                       <div
                         key={mcp.value}
@@ -429,7 +429,7 @@ export default function ChatArea({
                     </div>
                     <div className="text-xs font-bold text-foreground">AI Tools</div>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
                     {aiTools.map((tool) => (
                       <div
                         key={tool.value}
@@ -495,7 +495,7 @@ export default function ChatArea({
                     </div>
                     <div className="text-xs font-bold text-foreground">Languages</div>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
                     {languages.map((language) => (
                       <div
                         key={language.value}
