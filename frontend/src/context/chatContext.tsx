@@ -5,6 +5,8 @@ import axios from "axios";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "../hooks/useAuth";
 import { v7 as uuidv7 } from 'uuid'
+import { getMediaSupportByModelName } from "../../utils/models";
+import { useLLMStyleStore } from "../../store/useLLMStyleStore";
 import { useAlert } from "./alertContext";
 
 
@@ -15,7 +17,6 @@ interface ChatContextType {
     selectLanguage: React.Dispatch<React.SetStateAction<string>>;
     selectModel: React.Dispatch<React.SetStateAction<string>>;
     setEditInput: React.Dispatch<React.SetStateAction<string>>;
-    setHistory: React.Dispatch<React.SetStateAction<GroupedHistoryByDate>>;
     editInput: string;
     Model: string;
     language: string;
@@ -29,9 +30,7 @@ interface ChatContextType {
     alertModel: boolean;
     abortControllerRef: React.MutableRefObject<AbortController | null>;
     handleSendMessage: (message: MessageContentItem[], mcpServers: any[], mcp_tools: any[], bot?: boolean, lang?: string) => Promise<void>;
-    memoizedHistory: GroupedHistoryByDate;
-    setChatMode: React.Dispatch<React.SetStateAction<ChatMode>>;
-    chatMode: ChatMode;
+
 
     agentId: string;
     setAgentId: React.Dispatch<React.SetStateAction<string>>;
@@ -41,10 +40,6 @@ interface ChatContextType {
     setTools: React.Dispatch<React.SetStateAction<any[]>>;
     tools: any[];
 
-    setCredits: React.Dispatch<React.SetStateAction<number>>;
-    credits: number;
-    setVideoCredits: React.Dispatch<React.SetStateAction<number>>;
-    videoCredits: number;
 
     event: string;
     setEvent: React.Dispatch<React.SetStateAction<string>>;
@@ -245,51 +240,6 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
             selectModel(model)
         }
     }, [])
-
-    useEffect(() => {
-        async function getData() {
-            if (status === 'unauthenticated') {
-                console.error("User unauthenticated");
-                return;
-            }
-            if (!user?.uid) {
-                console.error("User UID is missing");
-                return;
-            }
-
-            try {
-                const [userResult] = await Promise.allSettled([
-                    axios.get(`${process.env.NEXT_PUBLIC_API_URI}/v1/user/chathistory/${user.uid}`, { withCredentials: true }),
-
-                ]);
-
-
-                // Handle user result
-                if (userResult.status === 'fulfilled') {
-                    const userResponse = userResult.value;
-                    if (userResponse.status === 200) {
-                        const userData = userResponse.data.userData;
-
-                        // console.warn("User data response invalid:", userResponse);
-                        setHistory({});
-                    }
-                } else {
-                    //console.error("Failed to fetch user data:", userResult.reason);
-                    setHistory({});
-                }
-
-                // Handle server result independently
-
-            } catch (err) {
-                console.error("Unexpected error occurred:", err);
-            }
-
-        }
-
-        if (user) getData();
-    }, [user, memoizedHistory, aiTyping, status])
-    memoizedHistory = useMemo(() => historyItems, [historyItems]);
-    // //console.log(memoizedHistory)
     useEffect(() => {
         return () => {
             if (abortControllerRef.current) {
@@ -362,7 +312,7 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
                         'Cache-Control': 'no-cache',
                         'Connection': 'keep-alive',
                     },
-                    body: JSON.stringify({ messageData, history: chat, uid: `${user ? user?.uid : null}`, chat_id: chatId ? `${chatId}` : `${chat_id}`, workspace: currentWorkspace, config: config, aid: agentId }),
+                    body: JSON.stringify({ messageData, history: chat, uid: `${user ? user?.uid : null}`, chat_id: chatId ? `${chatId}` : `${chat_id}`, config: config, aid: agentId }),
                     signal: abortControllerRef.current.signal,
                     credentials: 'include',
                 });
@@ -375,7 +325,7 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
                         'Cache-Control': 'no-cache',
                         'Connection': 'keep-alive',
                     },
-                    body: JSON.stringify({ messageData, history: chat, uid: `${user ? user?.uid : null}`, chat_id: chatId ? `${chatId}` : `${chat_id}`, workspace: currentWorkspace, config: config }),
+                    body: JSON.stringify({ messageData, history: chat, uid: `${user ? user?.uid : null}`, chat_id: chatId ? `${chatId}` : `${chat_id}`, config: config }),
                     signal: abortControllerRef.current.signal,
                     credentials: 'include',
                 });
@@ -475,14 +425,12 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
             value={{
                 messages,
                 setMessages,
-                setHistory,
                 aiTyping,
                 setAiTyping,
                 abortControllerRef,
                 handleSendMessage,
                 setIsChatRoom,
                 setChatId,
-                memoizedHistory,
                 selectLanguage, language,
                 setChatPage,
                 alertModel,
@@ -492,8 +440,7 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
                 setEditInput, editInput,
                 aiWriting,
                 setAgentId,
-                agentId, userAgents, setUserAgents, tools, setTools, event, setEvent
-
+                agentId, userAgents, setUserAgents, tools, setTools, event, setEvent,
             }}
         >
             <McpServerProvider>

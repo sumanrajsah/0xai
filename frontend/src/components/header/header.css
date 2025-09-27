@@ -1,0 +1,248 @@
+.header {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: 6vh;
+    right: 0%;
+    background: transparent;
+}
+
+.header-left-btn-cont {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: center;
+    justify-content: left;
+    left: 1%;
+    gap: 5px;
+}
+
+.select-workspace-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    justify-content: left;
+    padding: 8px 8px;
+    cursor: pointer;
+    font-size: 16px;
+    gap: 10px;
+    border: none;
+    background: none;
+    border-radius: 10px;
+}
+
+.select-workspace-btn:hover {
+    background: rgba(var(--bg-color1), 0.2);
+    box-shadow:
+        0 6px 10px rgba(0, 0, 0, 0.35),
+        inset 0 1px 2px rgba(255, 255, 255, 0.25);
+}
+
+.expanded {
+    width: calc(100% - 60px);
+    animation: slideInWindow 0.2s ease-in-out;
+}
+
+.collapsed {
+    width: calc(100% - 250px);
+    animation: slideOutWindow 0.2s ease-in-out;
+}
+
+.credit-btn {
+    width: 100px;
+    height: 30px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 2px solid rgba(var(--bg-color1), 0.6);
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+@keyframes slideOutWindow {
+    from {
+        width: calc(100% - 60px);
+    }
+
+    to {
+        width: calc(100% - 250px);
+    }
+}
+
+@keyframes slideInWindow {
+    from {
+        width: calc(100% - 250px);
+    }
+
+    to {
+        width: calc(100% - 60px);
+    }
+}
+
+.btn-cont {
+    position: absolute;
+    display: flex;
+
+    flex-direction: row;
+    align-items: center;
+    text-align: center;
+    justify-content: right;
+    gap: 10px;
+    right: 1%;
+    width: 250px;
+}
+
+/* Default styles */
+.header-button {
+
+    position: relative;
+    padding: clamp(5px, 1.5vw, 10px) clamp(10px, 2vw, 10px);
+    cursor: pointer;
+    border-radius: clamp(6px, 1.5vw, 10px);
+    font-size: clamp(12px, 2.2vw, 14px);
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 0.2px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    width: 100px;
+}
+
+.account-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    overflow: hidden;
+    border: 2px solid rgba(var(--bg-color1), 0.6);
+    border-radius: 50%;
+}
+
+.header-button:hover {
+
+    background-clip: none;
+    transform: scale(1.03);
+
+}
+
+.avatar {
+    border-radius: 50%;
+    height: 100%;
+    width: 100%;
+
+}
+
+.ham-btn {
+    position: relative;
+    display: none;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    left: 1%;
+    padding: 1px 1px;
+    cursor: pointer;
+    width: 35px;
+    height: 35px;
+    gap: 10px;
+
+
+    svg {
+        height: 28px;
+    }
+}
+
+.profile-cont {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+    top: 50%;
+    right: 3%;
+}
+
+.workspace-cont {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+    top: 50%;
+    left: 50px;
+}
+
+html.dark {
+
+    .header-button {
+        background: linear-gradient(145deg,
+                rgba(var(--bg-color1), 0.18),
+                rgba(var(--bg-color1), 0.08));
+        box-shadow:
+            0 8px 25px rgba(0, 0, 0, 0.4),
+            inset 0 1px 2px rgba(255, 255, 255, 0.08),
+            inset 0 -2px 6px rgba(0, 0, 0, 0.2);
+        color: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(var(--bg-color1), 0.15);
+    }
+}
+
+html.light {
+
+    .header-button {
+        background: linear-gradient(145deg,
+                rgba(var(--bg-color1), 0.12),
+                rgba(var(--bg-color1), 0.06));
+        box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.12),
+            0 6px 18px rgba(0, 0, 0, 0.08),
+            inset 0 2px 4px rgba(255, 255, 255, 0.8);
+        color: #0E1111;
+        border: 1px solid rgba(var(--bg-color1), 0.15);
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    .ham-btn {
+        display: flex;
+    }
+
+    .collapsed {
+        width: 100%;
+        animation: none;
+    }
+
+    .expanded {
+        width: 100%;
+        animation: none;
+    }
+}
+
+@media screen and (max-width: 768px) {
+
+    .select-workspace-btn {
+        font-size: 12px;
+        padding: 5px 5px;
+        gap: 5px;
+    }
+
+
+}
+
+@media screen and (max-width: 500px) {
+    .select-workspace-btn {
+        border-radius: 5px;
+    }
+}

@@ -1,0 +1,68 @@
+.page-struct1 {
+    max-width: 100vw;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: row;
+    min-height: 100%;
+}
+
+.page-struct1-body {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    right: 0%;
+    height: calc(100dvh - 6vh);
+    justify-content: center;
+    align-items: center;
+    top: 6vh;
+    padding: 10px;
+    border-radius: 10px;
+    overflow-y: auto;
+    width: auto;
+}
+
+.expanded {
+    width: calc(100% - 60px);
+    animation: slideInWindow 0.2s ease-in-out;
+}
+
+.collapsed-page {
+    width: calc(100% - 260px);
+    animation: slideOutWindow 0.2s ease-in-out;
+}
+
+@keyframes slideOutWindow {
+    from {
+        width: calc(100% - 60px);
+    }
+
+    to {
+        width: calc(100% - 260px);
+    }
+}
+
+@keyframes slideInWindow {
+    from {
+        width: calc(100% - 260px);
+    }
+
+    to {
+        width: calc(100% - 60px);
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    .page-struct1-body {
+        width: 100vw;
+    }
+
+    .collapsed-page {
+        width: 100vw;
+        animation: none;
+    }
+
+    .expanded {
+        width: 100vw;
+        animation: none;
+    }
+}
