@@ -127,44 +127,15 @@ const Sidebar = () => {
                         <PlusCircle size={20} />Create
                     </SidebarButton >
 
-                    {quickAccessExpanded && (
-                        <div className="sidebar-dropdown-cont">
-                            <button
-                                className="dropdown-list"
-                                onClick={() => {
-                                    location.hash = '#settings';
-                                }}
-                            >
-                                <Plus size={14} /> Manage Quick Access
-                            </button>
-                            <hr />
-                            {quickAccess?.agents?.map((agent: any) => (
-                                <button
-                                    className="dropdown-list"
-                                    key={agent.aid}
-                                    onClick={() => {
-                                        router.push(`/agent/${agent.aid}`);
-                                        setMessages([]);
-                                        setChatId('');
-                                    }}
-                                >
-                                    <img
-                                        style={{ borderRadius: '30%' }}
-                                        src={agent.image}
-                                        alt={agent.name}
-                                        height={24}
-                                        width={24}
-                                    />
-                                    @{agent.handle}
-                                </button>
-                            ))}
-                        </div>
-                    )}
 
 
 
-                    <SidebarButton className="sidebar-button" data-tooltip={'history'} onClick={() => toggleDropdown('workspace')}>
+
+                    <SidebarButton className="sidebar-button" data-tooltip={'history'} onClick={() => router.push('/agents')}>
                         <Layers size={20} /> AI Agents
+                    </SidebarButton>
+                    <SidebarButton className="sidebar-button" data-tooltip={'history'} onClick={() => router.push('/agents/publish')}>
+                        <Layers size={20} /> Publish Agents
                     </SidebarButton>
 
                 </div>

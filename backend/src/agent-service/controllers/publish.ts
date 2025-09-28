@@ -63,11 +63,6 @@ export const Publish = async (req: Request, res: Response): Promise<void> => {
                 categories: data.categories,
                 tags: data.tags
             },
-            pricing_info: {
-                amount: data.price,
-                currency: 'AUM',
-                type: 'credits'
-            },
             status: 'active',
             owner: {
                 address: data.address

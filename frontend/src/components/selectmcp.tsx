@@ -235,7 +235,7 @@ const SelectMcpButton = () => {
                             {!showTools && <div className="mcp-checkbox server-checkbox">
                                 <div className="mcp-content">
                                     <div className="mcp-name">{server.label}</div>
-                                    {server.tools.length > 0 && (
+                                    {server && server?.tools?.length > 0 && (
                                         <div className="mcp-tools-count">
                                             {server.tools.length} tools
                                         </div>
@@ -294,7 +294,7 @@ const SelectMcpButton = () => {
                     );
                 })}
             </div>
-            {selectedTools.length > 0 && <button className="add-mcp-btn" onClick={() => setShowTools(!showTools)}>{showTools ? 'Hide Mcp Functions' : 'Show Mcp Functions'}</button>}
+            {selectedTools && selectedTools.length > 0 && <button className="add-mcp-btn" onClick={() => setShowTools(!showTools)}>{showTools ? 'Hide Mcp Functions' : 'Show Mcp Functions'}</button>}
             <button className="add-mcp-btn" onClick={() => router.push('/create/mcp')}>+ Add Mcp</button>
 
             {/* Selected Tools Summary */}
