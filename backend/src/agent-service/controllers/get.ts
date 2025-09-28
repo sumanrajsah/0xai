@@ -70,7 +70,19 @@ export const getAgentByUID = async (req: Request, res: Response): Promise<void> 
 
 
     try {
-        const agents = await db.collection('agents').find({ uid, status: 'draft' }).toArray();
+        const agents = await db.collection('agents').aggregate([
+            {
+                $match: { uid }
+            },
+            {
+                $lookup: {
+                    from: 'agent_config',
+                    localField: 'aid',
+                    foreignField: 'aid',
+                    as: 'configs' // will contain all matching configs as an array
+                }
+            }
+        ]).toArray();
 
         if (!agents || agents.length === 0) {
             res.status(404).json({ success: false, error: 'No agents found for the provided UID' });
@@ -81,79 +93,5 @@ export const getAgentByUID = async (req: Request, res: Response): Promise<void> 
     } catch (err) {
         console.error('Error fetching agents with configs:', err);
         res.status(500).json({ success: false, error: 'Internal server error' });
-    }
-};
-export const GetPublishedAgents = async (req: Request, res: Response): Promise<void> => {
-    const db = req.app.locals.db;
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const category = req.query.category as string;
-    const uid = req.query.uid as string;
-    const search = (req.query.search as string || '').trim().toLowerCase();
-
-    try {
-        const store = db.collection('store');
-
-        const pipeline: any[] = [
-            { $match: { type: 'agent' } },
-            {
-                $lookup: {
-                    from: 'agents',
-                    localField: 'info.aid',
-                    foreignField: 'aid',
-                    as: 'agent'
-                }
-            },
-            { $unwind: '$agent' }
-        ];
-
-        if (category) {
-            pipeline.push({ $match: { 'info.categories': category } });
-        }
-
-        if (uid) {
-            pipeline.push({ $match: { 'owner.uid': uid } });
-        }
-
-        if (search) {
-            pipeline.push({
-                $match: {
-                    $or: [
-                        { 'agent.name': { $regex: search, $options: 'i' } },
-                        { 'agent.handle': { $regex: search, $options: 'i' } },
-                        { 'info.tags': { $elemMatch: { $regex: search, $options: 'i' } } }
-                    ]
-                }
-            });
-        }
-
-        pipeline.push(
-            {
-                $project: {
-                    publish_id: 1,
-                    createdAt: 1,
-                    updatedAt: 1,
-                    agent: {
-                        aid: '$agent.aid',
-                        name: '$agent.name',
-                        description: '$agent.description',
-                        image: '$agent.image',
-                        handle: '$agent.handle',
-                        categories: '$info.categories',
-                        tags: '$info.tags'
-                    },
-                    owner: 1 // keep raw owner object from store
-                }
-            },
-            { $sort: { createdAt: -1 } },
-            { $skip: (page - 1) * limit },
-            { $limit: limit }
-        );
-
-        const result = await store.aggregate(pipeline).toArray();
-        res.status(200).json({ agents: result });
-    } catch (e) {
-        console.log(e);
-        res.status(400).json({ error: 'Something went wrong' });
     }
 };

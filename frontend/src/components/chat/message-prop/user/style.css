@@ -1,0 +1,91 @@
+.user-chat-msg-cont {
+    max-width: 800px;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.user-msg-cont {
+    display: block;
+
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    word-spacing: 1px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    /* 'wrap' is invalid; use 'normal' */
+    line-height: 2;
+    /* optional: glassmorphism effect */
+    background: none;
+    width: 100%;
+    position: relative;
+    gap: 10px;
+    justify-content: center;
+}
+
+.user-msg-box {
+    display: block;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    max-width: 100%;
+    padding: 1px 20px;
+    background: rgba(var(--bg-color1), 0.2);
+    border-radius: 30px;
+
+    box-sizing: border-box;
+    /* include padding in width */
+
+    .user-msg-box {
+        display: block;
+        /* block ensures full width */
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        width: 100%;
+        max-width: 100%;
+        padding: 8px 20px;
+        background: rgba(var(--bg-color1), 0.2);
+        border-radius: 30px;
+        box-sizing: border-box;
+
+        /* Wrapping */
+        white-space: pre-wrap;
+        /* preserves line breaks */
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
+
+        overflow-x: hidden;
+        /* prevents horizontal scroll */
+    }
+
+    overflow: none;
+    /* prevents horizontal overflow */
+}
+
+.user-msg-box p,
+.user-msg-box li,
+.user-msg-box table,
+.user-msg-box td,
+.user-msg-box th,
+.user-msg-box code,
+.user-msg-box pre {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    white-space: pre-wrap;
+}
+
+
+
+.chat-image_url-cont {
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid gray;
+}

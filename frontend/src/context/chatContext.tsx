@@ -6,7 +6,6 @@ import { useParams, usePathname, useRouter, useSearchParams } from "next/navigat
 import { useAuth } from "../hooks/useAuth";
 import { v7 as uuidv7 } from 'uuid'
 import { getMediaSupportByModelName } from "../../utils/models";
-import { useLLMStyleStore } from "../../store/useLLMStyleStore";
 import { useAlert } from "./alertContext";
 
 
@@ -213,7 +212,6 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
     const [tools, setTools] = useState<any[]>([])
     const [Model, selectModel] = useState<string>('gpt-5-nano');
     const [editInput, setEditInput] = useState<string>('');
-    const { temperature, top_p, frequency_penalty, presence_penalty } = useLLMStyleStore();
     const [event, setEvent] = useState('')
 
     //agents 
@@ -251,29 +249,7 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
 
     const handleSendMessage = useCallback(async (message: MessageContentItem[], mcpServers: any[], mcp_tools: any[], bot?: boolean, lang?: string) => {
         abortControllerRef.current = new AbortController();
-        let chat_id;
 
-        if (user && !(pathname.startsWith('/c/') || (pathname.includes('/workspace/') && pathname.includes('/c/')) || (pathname.includes('/agents/') && pathname.includes('/c/')))) {
-            try {
-
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URI}/v1/chat/newChat`, { withCredentials: true });
-                if (response.data.status === 'success') {
-                    chat_id = response.data.chat_id;
-                    //console.log(response.data.chat_id)
-                    setChatId(response.data.chat_id)
-                    // setHistory([{ title: chat_id, chat_id: chat_id }])
-                    if (agentId !== '') {
-                        router.push(`/agent/${agentId}/c/${response.data.chat_id}`)
-                    } else {
-                        router.push(`/c/${response.data.chat_id}?model=${Model}`)
-                    }
-                };
-                // await updateChat(messageData, response.data.chat_id);
-                // return;
-            } catch (error: any) {
-                //console.log(error.message);
-            }
-        }
 
         setAiTyping(true);
 
@@ -295,10 +271,6 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
                 mcp_server: mcpServers,
                 mcp_tools: mcp_tools,
                 tools: tools,
-                temperature: temperature,
-                top_p: top_p,
-                frequency_penalty: frequency_penalty,
-                presence_penalty: presence_penalty,
                 supportsMedia: getMediaSupportByModelName(Model)
             }
             let response;
@@ -312,7 +284,7 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
                         'Cache-Control': 'no-cache',
                         'Connection': 'keep-alive',
                     },
-                    body: JSON.stringify({ messageData, history: chat, uid: `${user ? user?.uid : null}`, chat_id: chatId ? `${chatId}` : `${chat_id}`, config: config, aid: agentId }),
+                    body: JSON.stringify({ messageData, history: chat, uid: `${user ? user?.uid : null}`, config: config, aid: agentId }),
                     signal: abortControllerRef.current.signal,
                     credentials: 'include',
                 });
@@ -325,7 +297,7 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
                         'Cache-Control': 'no-cache',
                         'Connection': 'keep-alive',
                     },
-                    body: JSON.stringify({ messageData, history: chat, uid: `${user ? user?.uid : null}`, chat_id: chatId ? `${chatId}` : `${chat_id}`, config: config }),
+                    body: JSON.stringify({ messageData, history: chat, uid: `${user ? user?.uid : null}`, config: config }),
                     signal: abortControllerRef.current.signal,
                     credentials: 'include',
                 });

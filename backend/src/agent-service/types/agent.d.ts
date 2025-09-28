@@ -18,6 +18,7 @@ export interface Agent {
     name: string;
     instructions: string;
     demos: Demo[];
+    image: string | null;
     tools: Tools;
     isPublic: boolean;
     [key: string]: any;

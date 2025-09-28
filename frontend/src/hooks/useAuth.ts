@@ -90,7 +90,7 @@ export const useAuth = () => {
                 .catch(() => setStatus("unauthenticated"));
         }
     }, [account.isConnected, account.address, status]);
-    console.log("Auth State:", { user, status, loading });
+    // console.log("Auth State:", { user, status, loading });
 
     return { user, status, isAuthLoading: loading, ConnectWallet, Logout };
 };

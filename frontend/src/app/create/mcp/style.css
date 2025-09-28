@@ -1,0 +1,342 @@
+/* Base container styles */
+.mcpserver-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 90vh;
+    padding: clamp(10px, 5vw, 30px);
+    gap: clamp(15px, 4vw, 25px);
+    width: 100%;
+    min-height: 100vh;
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: none;
+}
+
+.mcpserver-cont {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(400px, 90vw);
+    gap: clamp(15px, 3vw, 20px);
+    min-height: 100vh;
+    padding: 0 10px;
+}
+
+/* Enhanced form sections */
+.mcpserver-sbox {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(8px, 2vw, 15px);
+    width: 100%;
+    padding: clamp(15px, 4vw, 25px) clamp(12px, 3vw, 20px);
+    border-radius: 16px;
+    backdrop-filter: blur(15px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+}
+
+.mcpserver-sbox:hover {
+    transform: translateY(-2px);
+}
+
+/* Label styles */
+.mcpserver-sbox label {
+    font-weight: 600;
+    font-size: clamp(12px, 2.5vw, 14px);
+    color: rgba(var(--bg-color1), 0.8);
+    align-self: flex-start;
+    margin-left: 5%;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Input field styles */
+.mcpserver-sbox input,
+.mcpserver-sbox textarea,
+.mcpserver-sbox select {
+    font-size: clamp(14px, 3vw, 16px);
+    padding: clamp(10px, 2vw, 14px) clamp(12px, 2.5vw, 16px);
+    border-radius: 12px;
+    border: 1.5px solid rgba(var(--bg-color1), 0.15);
+    width: 90%;
+    background: rgba(var(--bg-color1), 0.02);
+    color: inherit;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 2px 4px rgba(var(--bg-color1), 0.05);
+}
+
+.mcpserver-sbox input:focus,
+.mcpserver-sbox textarea:focus,
+.mcpserver-sbox select:focus {
+    border-color: rgba(var(--bg-color1), 0.4);
+    box-shadow:
+        0 0 0 3px rgba(var(--bg-color1), 0.08),
+        inset 0 2px 4px rgba(var(--bg-color1), 0.05);
+    outline: none;
+    transform: translateY(-1px);
+    background: rgba(var(--bg-color1), 0.04);
+}
+
+.mcpserver-sbox input:hover,
+.mcpserver-sbox textarea:hover,
+.mcpserver-sbox select:hover {
+    border-color: rgba(var(--bg-color1), 0.25);
+    background: rgba(var(--bg-color1), 0.03);
+}
+
+.mcpserver-sbox textarea {
+    resize: vertical;
+    min-height: clamp(60px, 15vw, 100px);
+    max-height: 200px;
+    line-height: 1.5;
+}
+
+/* Button styles */
+.mcpserver-sbox button,
+.mcp-save-btn {
+    width: clamp(130px, 35vw, 160px);
+    padding: clamp(10px, 2.5vw, 14px) 0;
+    font-size: clamp(14px, 3vw, 16px);
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(var(--bg-color1), 0.2);
+    box-shadow:
+        0 6px 20px rgba(var(--bg-color1), 0.08),
+        inset 0 1px 0 rgba(var(--bg-color1), 0.1);
+    background: linear-gradient(135deg, rgba(var(--bg-color1), 0.08) 0%, rgba(var(--bg-color1), 0.04) 100%);
+    color: inherit;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+}
+
+.mcpserver-sbox button::before,
+.mcp-save-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(var(--bg-color1), 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.mcpserver-sbox button:hover::before,
+.mcp-save-btn:hover::before {
+    left: 100%;
+}
+
+.mcpserver-sbox button:hover,
+.mcp-save-btn:hover {
+    background: linear-gradient(135deg, rgba(var(--bg-color1), 0.12) 0%, rgba(var(--bg-color1), 0.08) 100%);
+    box-shadow:
+        0 8px 25px rgba(var(--bg-color1), 0.15),
+        inset 0 1px 0 rgba(var(--bg-color1), 0.15);
+    transform: translateY(-2px);
+    border-color: rgba(var(--bg-color1), 0.3);
+}
+
+.mcpserver-sbox button:active,
+.mcp-save-btn:active {
+    transform: translateY(0);
+    box-shadow:
+        0 4px 12px rgba(var(--bg-color1), 0.1),
+        inset 0 1px 0 rgba(var(--bg-color1), 0.1);
+}
+
+/* Button container */
+.server-btn-cont {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(12px, 3vw, 20px);
+    width: 100%;
+    padding: clamp(10px, 2vw, 15px) 0;
+}
+
+/* Disabled button styles */
+.disabled-btn {
+    position: relative;
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.3);
+}
+
+.disabled-btn:hover {
+    transform: none !important;
+    background: rgba(var(--bg-color1), 0.05) !important;
+    box-shadow: 0 4px 12px rgba(var(--bg-color1), 0.08) !important;
+}
+
+.disabled-btn::after {
+    content: "Coming Soon";
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: clamp(10px, 2vw, 12px);
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.disabled-btn::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid rgba(0, 0, 0, 0.9);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.disabled-btn:hover::after,
+.disabled-btn:hover::before {
+    opacity: 1;
+}
+
+/* Enhanced responsive design */
+@media screen and (max-width: 768px) {
+    .mcpserver-cont {
+        width: 95vw;
+        gap: 15px;
+    }
+
+    .mcpserver-body {
+        padding: 15px 10px;
+        max-height: 75vh;
+        border-radius: 12px;
+    }
+
+    .mcpserver-sbox {
+        padding: 20px 15px;
+        border-radius: 12px;
+    }
+
+    .server-btn-cont {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .mcpserver-cont {
+        width: 98vw;
+        padding: 0 5px;
+    }
+
+    .mcpserver-body {
+        padding: 10px 5px;
+        gap: 12px;
+        border-radius: 8px;
+    }
+
+    .mcpserver-sbox {
+        padding: 15px 10px;
+        gap: 10px;
+        border-radius: 8px;
+    }
+
+    .mcpserver-sbox input,
+    .mcpserver-sbox textarea,
+    .mcpserver-sbox select {
+        width: 95%;
+        border-radius: 8px;
+    }
+
+    .mcpserver-sbox button,
+    .mcp-save-btn {
+        width: 100%;
+        max-width: 200px;
+        border-radius: 8px;
+    }
+
+    .disabled-btn::after {
+        top: -40px;
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
+@media screen and (max-width: 320px) {
+    .mcpserver-body {
+        padding: 8px;
+        gap: 10px;
+    }
+
+    .mcpserver-sbox {
+        padding: 12px 8px;
+        gap: 8px;
+    }
+
+    .mcpserver-sbox label {
+        margin-left: 2%;
+        font-size: 12px;
+    }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+
+
+    .mcpserver-sbox input,
+    .mcpserver-sbox textarea,
+    .mcpserver-sbox select {
+        background: rgba(var(--bg-color1), 0.03);
+        border-color: rgba(var(--bg-color1), 0.2);
+    }
+}
+
+/* Smooth animations for better UX */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .mcpserver-sbox {
+        border-width: 2px;
+    }
+
+    .mcpserver-sbox input,
+    .mcpserver-sbox textarea,
+    .mcpserver-sbox select {
+        border-width: 2px;
+    }
+
+    .mcpserver-sbox button,
+    .mcp-save-btn {
+        border-width: 2px;
+    }
+}

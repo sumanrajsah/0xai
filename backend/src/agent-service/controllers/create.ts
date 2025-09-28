@@ -1,42 +1,39 @@
-
 import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
+import { Agent } from '../types/agent';
 import { v7 as uuidv7 } from 'uuid';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { Agent } from '../types/agent';
+import fsPromises from 'fs/promises';
+dotenv.config();
+
+async function getUserPlan(db: any, redis: any, uid: string) {
+    // Try cache first
+    const cacheKey = `user:plan:${uid}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) return cached;
+
+    // Fallback to DB
+    const user = await db.collection("users").findOne(
+        { uid },
+        { projection: { plan: 1 } }
+    );
+    const plan = user?.plan || "free";
+
+    // Store in cache for 15 minutes (900 seconds)
+    await redis.set(cacheKey, plan, "EX", 900);
+
+    return plan;
+}
 export const createAgent = async (req: Request, res: Response): Promise<void> => {
     const db = req.app.locals.db;
-    // console.log('Request body:', req.body);
-
-    // Check if req.body exists
-    if (!req.body) {
-        res.status(400).json({ success: false, message: 'Request body is missing' });
-        return;
-    }
-
+    const redis = req.app.locals.redis;
     const { uid } = req.body;
+    const agentData = JSON.parse(req.body.agentData);
+    const agentMetadata = JSON.parse(req.body.agentMetadata)
 
-    // Check if required fields exist
-    if (!uid) {
-        res.status(400).json({ success: false, message: 'uid is required' });
-        return;
-    }
-
-    if (!req.body.agentData) {
-        res.status(400).json({ success: false, message: 'agentData is required' });
-        return;
-    }
-
-    if (!req.body.agentMetadata) {
-        res.status(400).json({ success: false, message: 'agentMetadata is required' });
-        return;
-    }
-
-    const agentData = req.body.agentData;
-    const agentMetadata = req.body.agentMetadata
     const user = (req as any).user
 
     if (uid !== user.uid) {
@@ -45,10 +42,15 @@ export const createAgent = async (req: Request, res: Response): Promise<void> =>
     }
 
     if (!agentData) {
-        res.status(400).json({ success: false, message: 'Agent data missing' });
+        res.status(400).json({ success: false, message: 'Agent data or image file missing' });
         return;
     }
-
+    const agents = await db.collection('agents').find({ uid }).toArray();
+    if (await getUserPlan(db, redis, uid) === "free" && agents.length >= 1) {
+        // Apply pro-plus specific logic
+        res.status(403).json({ success: false, message: "Free plan users can create only 1 agent. Please upgrade your plan." });
+        return;
+    }
     const agenth = await db.collection('agents').findOne({ handle: agentMetadata.handle })
 
     if (agenth) {
@@ -60,6 +62,16 @@ export const createAgent = async (req: Request, res: Response): Promise<void> =>
 
         const aid = `agent_${uuidv7()}`
 
+        const extraData = {
+            config_id: `config_${uuidv7()}`,
+            aid: aid,
+            status: 'draft',
+            version: 1,
+            createdAt: new Date(),
+            // ✅ Attach public image URL to agent
+        };
+
+        const agentdata: Agent = { ...agentData, ...extraData };
         const agent = {
             name: agentMetadata.name,
             description: agentMetadata.description,
@@ -71,11 +83,11 @@ export const createAgent = async (req: Request, res: Response): Promise<void> =>
             createdAt: new Date(),
             updatedAt: new Date(),
             current_version: 1,
-            status: 'draft',
-            agentData
+            status: 'draft'
         }
+        const result = await db.collection('agent_config').insertOne(agentdata);
         const response = await db.collection('agents').insertOne(agent)
-        res.status(201).json({ success: true, message: 'Agentcreated successfully', aid: aid });
+        res.status(201).json({ success: true, message: 'Agent and config created successfully' });
 
     } catch (err) {
         console.error('Failed to create agent:', err);

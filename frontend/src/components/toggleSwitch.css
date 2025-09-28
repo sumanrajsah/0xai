@@ -1,0 +1,48 @@
+.switch {
+    font-size: 17px;
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 44px;
+    background: rgba(128, 128, 128, 0.185);
+    transition: 0.4s;
+    border-radius: 30px;
+}
+
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 15px;
+    width: 15px;
+    left: 3px;
+    background: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background: rgba(94, 129, 173, 0.788);
+    border: 1px solid transparent;
+}
+
+input:checked+.slider:before {
+    transform: translateX(1.4em);
+}

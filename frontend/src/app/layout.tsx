@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import Web3ModalProvider from "@/context/wagmi";
 import { headers } from "next/headers";
@@ -9,15 +9,12 @@ import { AppContextProvider } from "@/context/chatContext";
 import PageStruct1 from "@/components/pagestruct/struct1";
 import ThemeP from "./themeProvider";
 
-const geistSans = Geist({
+const geistSans = Poppins({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  weight: "100"
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "0xAI - AI-Powered Blockchain Assistant",
@@ -34,7 +31,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} antialiased`}
       >
         <Web3ModalProvider cookies={cookies}>
 

@@ -57,3 +57,182 @@ export function getTools(value: string) {
     const model = llmModels.find(m => m.value === value);
     return model ? model.tools : undefined;
 }
+
+interface LLMStyleParams {
+    temperature: number;
+    top_p: number;
+    frequency_penalty: number;
+    presence_penalty: number;
+}
+
+const styleConfig: Record<string, LLMStyleParams> = {
+    "Formal": {
+        temperature: 0.2,
+        top_p: 0.7,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.0
+    },
+    "Informal": {
+        temperature: 0.7,
+        top_p: 0.9,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.1
+    },
+    "Polite": {
+        temperature: 0.3,
+        top_p: 0.8,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+    },
+    "Sarcastic": {
+        temperature: 1.0,
+        top_p: 1.0,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.3
+    },
+    "Humorous": {
+        temperature: 1.0,
+        top_p: 1.0,
+        frequency_penalty: 0.3,
+        presence_penalty: 0.2
+    },
+    "Empathetic": {
+        temperature: 0.6,
+        top_p: 0.9,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.1
+    },
+    "Neutral": {
+        temperature: 0.2,
+        top_p: 0.7,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+    },
+    "Authoritative": {
+        temperature: 0.3,
+        top_p: 0.75,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.0
+    },
+    "Optimistic": {
+        temperature: 0.6,
+        top_p: 0.9,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.1
+    },
+    "Pessimistic": {
+        temperature: 0.4,
+        top_p: 0.8,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.0
+    },
+    "BulletPoints": {
+        temperature: 0.3,
+        top_p: 0.7,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.0
+    },
+    "StepByStep": {
+        temperature: 0.4,
+        top_p: 0.75,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.0
+    },
+    "Concise": {
+        temperature: 0.3,
+        top_p: 0.7,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+    },
+    "Detailed": {
+        temperature: 0.5,
+        top_p: 0.85,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+    },
+    "Storytelling": {
+        temperature: 0.9,
+        top_p: 0.95,
+        frequency_penalty: 0.3,
+        presence_penalty: 0.2
+    },
+    "Metaphor": {
+        temperature: 0.9,
+        top_p: 0.95,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.3
+    },
+    "Poetic": {
+        temperature: 0.9,
+        top_p: 0.95,
+        frequency_penalty: 0.4,
+        presence_penalty: 0.2
+    },
+    "Philosophical": {
+        temperature: 0.8,
+        top_p: 0.9,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.1
+    },
+    "Technical": {
+        temperature: 0.2,
+        top_p: 0.7,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+    },
+    "Teacher": {
+        temperature: 0.4,
+        top_p: 0.75,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.0
+    },
+    "SupportAgent": {
+        temperature: 0.3,
+        top_p: 0.75,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+    },
+    "Motivational": {
+        temperature: 0.8,
+        top_p: 0.9,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.2
+    },
+    "Comedian": {
+        temperature: 1.0,
+        top_p: 1.0,
+        frequency_penalty: 0.4,
+        presence_penalty: 0.3
+    },
+    "Journalist": {
+        temperature: 0.3,
+        top_p: 0.7,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+    },
+    "LegalAdvisor": {
+        temperature: 0.2,
+        top_p: 0.7,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+    },
+    "Doctor": {
+        temperature: 0.2,
+        top_p: 0.7,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+    },
+    "StreetSlang": {
+        temperature: 0.9,
+        top_p: 0.95,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.4
+    }
+};
+
+export function getLLMParamsByStyle(style: string): LLMStyleParams {
+    return styleConfig[style] || { temperature: 0.7, top_p: 0.9 };  // Default to balanced
+}
+export function getAllLLMStyles(): string[] {
+    return Object.keys(styleConfig);
+}

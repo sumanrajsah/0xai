@@ -2,30 +2,6 @@ import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
-interface ServerInfo {
-    label: String,
-    description: string,
-    sid: String,
-    uid: string,
-    serverType: string,
-    created_on: number,
-    updated_on: number,
-    auth: boolean,
-    config: Config,
-    tools: string[];
-}
-
-interface Config {
-    url: String,
-    header: Header,
-    type: String,
-}
-
-interface Header {
-    key: string;
-    value: string
-}
-
 interface Tools {
     type: "function";
     function: {
@@ -35,16 +11,22 @@ interface Tools {
     };
 }
 
-async function getMcpServerDetails(db: any, serverId: string) {
+async function getMcpServerDetails(db: any, redis: any, serverId: string) {
     const cacheKey = `mcp_server:${serverId}`;
 
     try {
         // 1. Check Redis first
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return {
+                success: true,
+                data: JSON.parse(cached)
+            };
+        }
 
         // 2. Fallback to MongoDB
         const mcp_servers = db.collection('mcp_servers');
         const mcp = await mcp_servers.findOne({ sid: serverId });
-        console.log(mcp, serverId)
 
         if (!mcp) {
             return {
@@ -53,6 +35,8 @@ async function getMcpServerDetails(db: any, serverId: string) {
             };
         }
 
+        // 3. Save to Redis for 1 hour
+        await redis.set(cacheKey, JSON.stringify(mcp), { EX: 3600 });
 
         return {
             success: true,
@@ -68,10 +52,9 @@ async function getMcpServerDetails(db: any, serverId: string) {
 }
 
 
-export async function McpClient(db: any, server: any, allowedTools: any[]) {
+export async function McpClient(db: any, redis: any, server: any, allowedTools: any[]) {
     // console.log(server)
-    const serverInfo = await getMcpServerDetails(db, server)
-    console.log(serverInfo)
+    const serverInfo = await getMcpServerDetails(db, redis, server)
     if (!serverInfo.success) {
         throw new Error("Missing required server information (authKey or URI).");
     }
