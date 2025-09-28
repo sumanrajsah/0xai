@@ -8,11 +8,11 @@ import cookieParser from 'cookie-parser';
 dotenv.config();
 
 const app = express();
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
 
 app.set('trust proxy', true);
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const PORT = 4002;
 const MONGO_URI = process.env.MONGO_URI!;

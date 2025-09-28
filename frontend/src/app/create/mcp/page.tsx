@@ -1,15 +1,15 @@
 'use client'
 import { useState } from "react";
 import './style.css';
-import { useMcpServer } from "../../../context/ChatContext";
 import { ToastContainer, toast } from "react-toastify";
 import { Oval } from "react-loader-spinner";
 import { useTheme } from "next-themes";
 import { useAuth } from "../../../hooks/useAuth";
 import { useAlert } from "../../../context/alertContext";
 import axios from "axios";
-import { MCP } from "@/app/components/mcpComp/function";
 import { useRouter } from "next/navigation";
+import { MCP } from "../../../../utils/mcp";
+import { useAccount } from "wagmi";
 
 // Define the McpServer type
 interface McpServer {
@@ -26,6 +26,7 @@ interface McpServer {
 }
 
 const McpServerModalSetting = () => {
+    const account = useAccount();
     const router = useRouter();
     const [create, setCreate] = useState(false)
     const [mcpServer, setMcpServer] = useState<McpServer>({
@@ -110,10 +111,10 @@ const McpServerModalSetting = () => {
 
         try {
             const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URI}/v1/servers/save`,
+                `${process.env.NEXT_PUBLIC_API_URI}/v1/agents/save`,
                 {
                     servers: mcpServer,
-                    uid: user.uid
+                    address: account.address,
                 },
                 {
                     withCredentials: true
@@ -147,7 +148,7 @@ const McpServerModalSetting = () => {
             alertMessage.error("Something went wrong while saving");
         }
     };
-    if (!user?.uid) {
+    if (account.isDisconnected) {
         return <div className="mcpserver-body">
             <p>You must be logged in to create an MCP server.</p>
         </div>
@@ -157,7 +158,7 @@ const McpServerModalSetting = () => {
         <div className="mcpserver-body">
             <h1>Add MCP</h1>
             <div className="mcpserver-cont">
-                {create && <div className="mcpserver-sbox">
+                <div className="mcpserver-sbox">
                     <label>Server Label</label>
                     <input
                         placeholder="SitrAi"
@@ -223,29 +224,16 @@ const McpServerModalSetting = () => {
                         )}
                     </div>
 
-                </div>}
+                </div>
 
                 <div className="server-btn-cont">
-                    {create && <button
+                    <button
                         className="mcp-save-btn"
                         onClick={SaveServer}
                         disabled={!mcpServer.label?.trim() || !mcpServer.uri?.trim()}
                     >
                         Save
-                    </button>}
-                    {!create && <button
-                        className="mcp-save-btn"
-                        onClick={() => setCreate(true)}
-                    >
-                        Add Mcp Server
-                    </button>}
-                    {!create && <button
-                        className="mcp-save-btn disabled-btn"
-                        onClick={() => setCreate(true)}
-                        disabled
-                    >
-                        Create Mcp Server
-                    </button>}
+                    </button>
                 </div>
             </div>
         </div>

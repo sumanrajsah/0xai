@@ -1,0 +1,49 @@
+.model-body {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    top: 0%;
+    scroll-behavior: none;
+}
+
+.model-cont {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    width: 500px;
+    height: 300px;
+    text-align: center;
+    background: #0E1111;
+    border-radius: 20px;
+    gap: 20px;
+}
+
+.model-btn {
+    padding: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+    background: linear-gradient(90deg, #00ffe141 0%, #9500ff44 82%);
+}
+
+.model-btn:hover {
+    color: whitesmoke;
+
+}
+
+/***************600px ********************/
+@media screen and (max-width: 600px) {
+    .model-cont {
+        width: 95vw;
+        height: 400px;
+    }
+}

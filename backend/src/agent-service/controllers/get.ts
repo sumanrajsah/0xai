@@ -54,16 +54,16 @@ export const getAgentById = async (req: Request, res: Response): Promise<void> =
         res.status(400).json({ error: 'Invalid ID or internal error' });
     }
 };
-export const getAgentByUID = async (req: Request, res: Response): Promise<void> => {
+export const getAgentByAddress = async (req: Request, res: Response): Promise<void> => {
     const db = req.app.locals.db;
-    const uid = req.params.uid;
+    const Address = req.params.Address;
     const user = (req as any).user
-    if (!uid || uid === undefined || uid === 'undefined') {
-        res.status(400).json({ success: false, error: 'UID parameter is missing' });
+    if (!Address || Address === undefined || Address === 'undefined') {
+        res.status(400).json({ success: false, error: 'Address parameter is missing' });
         return;
     }
 
-    if (uid !== user.uid) {
+    if (Address !== user.Address) {
         res.status(403).json({ error: "Forbidden: Unauthorized access" });
         return;
     }
@@ -72,7 +72,7 @@ export const getAgentByUID = async (req: Request, res: Response): Promise<void> 
     try {
         const agents = await db.collection('agents').aggregate([
             {
-                $match: { uid }
+                $match: { Address }
             },
             {
                 $lookup: {
@@ -85,7 +85,7 @@ export const getAgentByUID = async (req: Request, res: Response): Promise<void> 
         ]).toArray();
 
         if (!agents || agents.length === 0) {
-            res.status(404).json({ success: false, error: 'No agents found for the provided UID' });
+            res.status(404).json({ success: false, error: 'No agents found for the provided Address' });
             return;
         }
 

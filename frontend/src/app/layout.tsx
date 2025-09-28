@@ -12,7 +12,7 @@ import ThemeP from "./themeProvider";
 const geistSans = Poppins({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  weight: "100"
+  weight: "400"
 });
 
 

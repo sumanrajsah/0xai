@@ -5,6 +5,7 @@ import { useSidebarStore } from "../../../store/useSidebarStore";
 import { usePathname } from "next/navigation";
 import Header from "../header/header";
 import Sidebar from "../sidebar/sidebar";
+import Modal from "../modal";
 
 
 export default function PageStruct1({ children }: { children: React.ReactNode }) {
@@ -13,6 +14,7 @@ export default function PageStruct1({ children }: { children: React.ReactNode })
 
     return (
         <>
+            <Modal />
 
             {(pathname !== '/login' && pathname !== '/signup' && pathname !== '/term-and-condition') ? <div className="page-struct1">
                 <Header />

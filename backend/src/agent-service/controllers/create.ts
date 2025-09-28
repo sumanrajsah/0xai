@@ -9,15 +9,15 @@ import dotenv from 'dotenv';
 import fsPromises from 'fs/promises';
 dotenv.config();
 
-async function getUserPlan(db: any, redis: any, uid: string) {
+async function getUserPlan(db: any, redis: any, address: string) {
     // Try cache first
-    const cacheKey = `user:plan:${uid}`;
+    const cacheKey = `user:plan:${address}`;
     const cached = await redis.get(cacheKey);
     if (cached) return cached;
 
     // Fallback to DB
     const user = await db.collection("users").findOne(
-        { uid },
+        { address },
         { projection: { plan: 1 } }
     );
     const plan = user?.plan || "free";
@@ -29,26 +29,13 @@ async function getUserPlan(db: any, redis: any, uid: string) {
 }
 export const createAgent = async (req: Request, res: Response): Promise<void> => {
     const db = req.app.locals.db;
-    const redis = req.app.locals.redis;
-    const { uid } = req.body;
-    const agentData = JSON.parse(req.body.agentData);
-    const agentMetadata = JSON.parse(req.body.agentMetadata)
+    console.log(req.body)
+    const { address, agentData, agentMetadata } = req.body;
 
-    const user = (req as any).user
 
-    if (uid !== user.uid) {
-        res.status(403).json({ success: false, message: "Forbidden: Unauthorized access" });
-        return;
-    }
 
     if (!agentData) {
         res.status(400).json({ success: false, message: 'Agent data or image file missing' });
-        return;
-    }
-    const agents = await db.collection('agents').find({ uid }).toArray();
-    if (await getUserPlan(db, redis, uid) === "free" && agents.length >= 1) {
-        // Apply pro-plus specific logic
-        res.status(403).json({ success: false, message: "Free plan users can create only 1 agent. Please upgrade your plan." });
         return;
     }
     const agenth = await db.collection('agents').findOne({ handle: agentMetadata.handle })
@@ -79,7 +66,7 @@ export const createAgent = async (req: Request, res: Response): Promise<void> =>
             tags: agentMetadata.tags,
             categories: agentMetadata.categories,
             aid: aid,
-            uid,
+            address,
             createdAt: new Date(),
             updatedAt: new Date(),
             current_version: 1,

@@ -12,7 +12,7 @@ export const saveServer = async (req: Request, res: Response): Promise<void> => 
             label: data.servers.label,
             description: data.servers.description,
             sid: `mcp_${uuidv7()}`,
-            uid: data.uid,
+            address: data.address,
             serverType: 'mcp',
             auth: data.servers.auth,
             config: {

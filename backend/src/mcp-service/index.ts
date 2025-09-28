@@ -8,7 +8,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.set('trust proxy', true);
-const PORT = 4002;
+const PORT = 4004;
 const MONGO_URI = process.env.MONGO_URI!;
 const DB_NAME = process.env.DB_NAME!;
 MongoClient.connect(MONGO_URI)

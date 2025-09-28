@@ -3,7 +3,7 @@ interface ServerInfo {
     label: String,
     description: string,
     sid: String,
-    uid: string,
+    address: string,
     serverType: string,
     created_on: number,
     updated_on: number,

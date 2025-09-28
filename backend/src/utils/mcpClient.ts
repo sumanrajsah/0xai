@@ -12,17 +12,10 @@ interface Tools {
 }
 
 async function getMcpServerDetails(db: any, redis: any, serverId: string) {
-    const cacheKey = `mcp_server:${serverId}`;
+
 
     try {
-        // 1. Check Redis first
-        const cached = await redis.get(cacheKey);
-        if (cached) {
-            return {
-                success: true,
-                data: JSON.parse(cached)
-            };
-        }
+        // 1. Check Redis fir
 
         // 2. Fallback to MongoDB
         const mcp_servers = db.collection('mcp_servers');
@@ -36,7 +29,7 @@ async function getMcpServerDetails(db: any, redis: any, serverId: string) {
         }
 
         // 3. Save to Redis for 1 hour
-        await redis.set(cacheKey, JSON.stringify(mcp), { EX: 3600 });
+
 
         return {
             success: true,

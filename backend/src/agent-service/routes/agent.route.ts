@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { checkHandle, createAgent } from '../controllers/create';
-import { getAgentById, getAgentByUID, getAllAgents } from '../controllers/get';
+import { getAgentByAddress, getAgentById, getAllAgents } from '../controllers/get';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -10,17 +10,6 @@ import { allowedOrigins } from '../../utils/allowedOrigin';
 import { authenticate } from '../../auth-service/middleware/auth.midleware';
 const router = Router();
 dotenv.config();
-router.use(cors({
-    origin: function (origin, callback) {
-        //console.log('CORS Origin:', origin, allowedOrigins);
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true
-}));
 router.use((req, res, next) => {
     if (req.path.includes('/completion')) {
         const requestStartTime = Date.now();
@@ -163,13 +152,13 @@ router.use(cookieParser());
 
 // Create Agent
 
-router.post('/create', authenticate, createAgent);
-router.post('/chat/completion', authenticate, AgentChat)
-router.post('/check-handle', authenticate, checkHandle)
+router.post('/create', createAgent);
+router.post('/chat/completion', AgentChat)
+router.post('/check-handle', checkHandle)
 
 // Get All Agents
-router.get('/', authenticate, getAllAgents);
+router.get('/', getAllAgents);
 router.get('/aid/:aid', getAgentById);
-router.get('/uid/:uid', authenticate, getAgentByUID);
+router.get('/address/:address', getAgentByAddress);
 
 export default router;

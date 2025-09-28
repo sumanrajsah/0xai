@@ -1,0 +1,32 @@
+.tools-body {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    min-height: 100vh;
+    z-index: 1;
+    gap: 20px;
+    overflow: auto;
+
+}
+
+.tools-close-btn {
+    position: fixed;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    top: 2%;
+    z-index: 1;
+    backdrop-filter: blur(20px);
+    /* Blur effect for a modern look */
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(114, 114, 114, 0.1);
+    /* Subtle shadow */
+    border: 2px solid rgba(128, 128, 128, 0.144);
+}

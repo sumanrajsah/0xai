@@ -62,8 +62,6 @@ export default function CreateAgents() {
     const [agentName, setAgentName] = useState("");
     const [agentHandle, setAgentHandle] = useState("");
     const [description, setDescription] = useState("");
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [imageFile, setImageFile] = useState<File | null>(null);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [tags, setTags] = useState<string[]>([]);
     const [tagsInput, setTagsInput] = useState<string>(''); // for display
@@ -330,24 +328,25 @@ export default function CreateAgents() {
         const formData = new FormData();
         formData.append('agentData', JSON.stringify(agentData));
         formData.append('agentMetadata', JSON.stringify(agentMetadata));
-        formData.append('uid', user?.uid || '');
-
-        if (selectedImage && imageFile) {
-            formData.append('file', imageFile);
-        }
+        formData.append('address', account.address || '');
 
         try {
             const response = await axios.post(
                 `${process.env.NEXT_PUBLIC_API_URI}/v1/agents/create`,
-                formData,
+                {
+                    agentData,
+                    agentMetadata,
+                    address: account.address || ""
+                },
                 {
                     withCredentials: true,
                     headers: {
-                        'Content-Type': 'multipart/form-data'
+                        "Content-Type": "application/json"
                     }
                 }
             );
 
+            console.log(response)
             if (response.status === 201) {
                 alertMessage.success("Agent Created Successfully");
                 location.href = '/store/agents/mine';
@@ -362,17 +361,6 @@ export default function CreateAgents() {
         }
     }
 
-    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setSelectedImage(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
     const togglePrebuiltTool = (toolName: string) => {
         setSelectedPrebuiltTools((prev) =>
@@ -424,7 +412,7 @@ export default function CreateAgents() {
     }
     return (
         <div className="cagent-body">
-            <h1>Create AUM Agent</h1>
+            <h1>Create AI Agent</h1>
             <div className="cagent-container">
                 <h2>Agent Info</h2>
                 {/* Agent Image */}
@@ -609,15 +597,16 @@ export default function CreateAgents() {
                         <div className="tool-checkbox-group">
                             {mcpServers.map((server, index) => {
                                 const serverTools = Array.isArray(server.tools) ? server.tools : [];
-                                const isExpanded = expandedServers.has(server.sid.toString());
-                                const selectedToolsCount = getSelectedToolsForServer(server.sid.toString()).length;
+
+                                const isExpanded = expandedServers.has(server?.sid?.toString());
+                                const selectedToolsCount = getSelectedToolsForServer(server.sid).length;
 
                                 return (
                                     <div key={index} className="mcp-server-container">
                                         {/* Server Header */}
                                         <div
                                             className="tool-checkbox mcp-server-header"
-                                            onClick={() => toggleServerExpansion(server.sid.toString())}
+                                            onClick={() => toggleServerExpansion(server.sid)}
                                         >
                                             <div className="create-server-info">
                                                 <div className="tool-name">

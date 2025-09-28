@@ -1,0 +1,305 @@
+/* Modal Overlay */
+.modal-body {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(12px);
+    background-color: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.modal-body.modal-visible {
+    opacity: 1;
+    visibility: visible;
+    backdrop-filter: blur(16px);
+}
+
+/* Modal Wrapper */
+.modal-wrapper {
+    position: relative;
+    width: 100%;
+    width: auto;
+    max-width: 90vw;
+    max-height: 96vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.modal-visible .modal-wrapper {
+    transform: scale(1) translateY(0);
+}
+
+/* Close Button */
+.modal-close-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(128, 128, 128, 0.3);
+    cursor: pointer;
+    border-radius: 50%;
+    margin-bottom: 16px;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    color: inherit;
+}
+
+.modal-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(128, 128, 128, 0.5);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-close-btn:active {
+    transform: scale(0.95);
+}
+
+/* Modal Container */
+.modal-cont {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    min-width: 280px;
+    max-width: 100%;
+    max-height: calc(90vh - 60px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    border-radius: 24px;
+    padding: 32px 24px;
+    gap: 24px;
+    backdrop-filter: blur(20px);
+
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+}
+
+/* Custom scrollbar for webkit browsers */
+.modal-cont::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-cont::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-cont::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.3);
+    border-radius: 3px;
+}
+
+.modal-cont::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 128, 128, 0.5);
+}
+
+/* Theme Specific Styles */
+html.dark .modal-body {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+html.dark .modal-cont {
+    background: linear-gradient(135deg, #1C273B 0%, #191E2B 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+html.dark .modal-close-btn {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+html.dark .modal-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+html.light .modal-body {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+html.light .modal-cont {
+    background: linear-gradient(135deg, #D6E2FB 0%, #E3EBFD 100%);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+html.light .modal-close-btn {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: #000000;
+}
+
+html.light .modal-close-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+
+/* Large Desktop */
+@media screen and (min-width: 1200px) {
+    .modal-cont {
+        min-width: 400px;
+        padding: 40px 32px;
+        gap: 32px;
+    }
+}
+
+/* Desktop */
+@media screen and (min-width: 768px) and (max-width: 1199px) {
+    .modal-cont {
+        min-width: 350px;
+        padding: 36px 28px;
+        gap: 28px;
+    }
+}
+
+/* Tablet */
+@media screen and (min-width: 481px) and (max-width: 767px) {
+    .modal-body {
+        padding: 12px;
+    }
+
+    .modal-cont {
+        min-width: 300px;
+        max-width: 95%;
+        padding: 28px 20px;
+        gap: 20px;
+        border-radius: 20px;
+    }
+
+    .modal-close-btn {
+        width: 36px;
+        height: 36px;
+        margin-bottom: 12px;
+    }
+}
+
+/* Mobile */
+@media screen and (max-width: 480px) {
+    .modal-body {
+        padding: 8px;
+        align-items: flex-start;
+        padding-top: 60px;
+    }
+
+    .modal-wrapper {
+        max-height: calc(100vh - 80px);
+        width: 100%;
+    }
+
+    .modal-cont {
+        width: 100%;
+        min-width: unset;
+        max-width: 100%;
+        padding: 20px 16px;
+        gap: 16px;
+        border-radius: 16px;
+        margin: 0;
+        max-height: calc(100vh - 140px);
+    }
+
+    .modal-close-btn {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 8px;
+    }
+}
+
+/* Extra Small Mobile */
+@media screen and (max-width: 360px) {
+    .modal-cont {
+        padding: 16px 12px;
+        gap: 12px;
+        border-radius: 12px;
+    }
+
+    .modal-close-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .modal-close-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* Height-based responsive adjustments */
+@media screen and (max-height: 600px) {
+    .modal-body {
+        padding: 8px;
+    }
+
+    .modal-cont {
+        max-height: calc(100vh - 80px);
+        padding: 16px 20px;
+        gap: 16px;
+    }
+
+    .modal-close-btn {
+        margin-bottom: 8px;
+    }
+}
+
+/* Landscape mobile orientation */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .modal-body {
+        padding: 4px;
+        padding-top: 20px;
+    }
+
+    .modal-cont {
+        max-height: calc(100vh - 60px);
+        padding: 12px 16px;
+        gap: 12px;
+    }
+}
+
+/* Focus and accessibility improvements */
+.modal-close-btn:focus {
+    outline: 2px solid rgba(59, 130, 246, 0.5);
+    outline-offset: 2px;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+    .modal-body,
+    .modal-wrapper,
+    .modal-close-btn {
+        transition: none;
+    }
+
+    .modal-body {
+        backdrop-filter: blur(8px);
+    }
+
+    .modal-body.modal-visible {
+        backdrop-filter: blur(8px);
+    }
+}

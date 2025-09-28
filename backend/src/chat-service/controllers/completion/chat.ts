@@ -36,7 +36,7 @@ function buildMemoryPrompt(memories: { text: string }[]) {
         .join("\n");
 }
 
-async function generateResponse(db: any, redis: any, role: "system" | "user" | "assistant" | "tool", userInput: MessageContentItem[], memories: any[], history: Array<{ role: "system" | "user" | "assistant" | "tool"; content?: MessageContentItem[]; tool_calls?: any[]; tool_call_id?: string; }>, config: any, workspace: string, signal?: AbortSignal, uid?: string, chat_id?: any, tool_call_id?: string): Promise<ReadableStream<Uint8Array> | undefined> {
+async function generateResponse(db: any, redis: any, role: "system" | "user" | "assistant" | "tool", userInput: MessageContentItem[], history: Array<{ role: "system" | "user" | "assistant" | "tool"; content?: MessageContentItem[]; tool_calls?: any[]; tool_call_id?: string; }>, config: any, workspace: string, signal?: AbortSignal, uid?: string, chat_id?: any, tool_call_id?: string): Promise<ReadableStream<Uint8Array> | undefined> {
     const traceId = `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = performance.now();
     console.log(`🚀 [${traceId}] generateResponse started`, {
@@ -51,16 +51,7 @@ async function generateResponse(db: any, redis: any, role: "system" | "user" | "
         hasSignal: !!signal
     });
     let systemMessageBlock = "";
-    if (memories?.length > 0) {
-        systemMessageBlock = `
-Relevant personal memories:
-${buildMemoryPrompt(memories)}
 
-Rules:
-- Use only if relevant to answering user's request.
-- Do not invent details. 
-`;
-    }
 
     const currentTime = new Date(Date.now()).toString();
 
@@ -519,7 +510,7 @@ Always perform at least one "web_search" query before answering any user questio
                                 functionResult = await generateResponse(
                                     db, redis, "tool",
                                     [{ type: 'text', text: JSON.stringify(searchResults) }],
-                                    memories, history, config, workspace, signal, uid, chat_id, toolCalls[idx].id
+                                    history, config, workspace, signal, uid, chat_id, toolCalls[idx].id
                                 );
 
                                 // Handle the recursive result...
@@ -610,7 +601,7 @@ Always perform at least one "web_search" query before answering any user questio
                                 console.log(`🔄 [${traceId}] Making recursive call for tool result processing${toolCalls}`);
                                 const recursiveStartTime = performance.now();
 
-                                functionResult = await generateResponse(db, redis, "tool", [{ type: 'text', text: `${result.data.content[0].text}` }], memories, history, config, workspace, signal, uid, chat_id, toolCalls[idx].id);
+                                functionResult = await generateResponse(db, redis, "tool", [{ type: 'text', text: `${result.data.content[0].text}` }], history, config, workspace, signal, uid, chat_id, toolCalls[idx].id);
 
                                 const recursiveEndTime = performance.now();
                                 console.log(`🔄 [${traceId}] Recursive call completed`, {

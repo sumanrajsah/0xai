@@ -1,0 +1,320 @@
+.selectmcp-btn-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: left;
+    gap: 5px;
+    padding: 5px 10px;
+    min-width: 90%;
+    max-width: 90vw;
+    max-height: 80vh;
+    min-height: 20vh;
+    overflow: hidden;
+}
+
+.selectmcp-btn-modal hr {
+    width: 98%;
+    box-shadow: 0 4px 6px rgba(var(--bg-color1), 114, 0.1);
+    border-color: rgba(var(--bg-color1), 0.144);
+}
+
+.selectmcp-btn-modal label {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    text-align: left;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.selectmcp-btn-cont {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 5px;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.mcp-server-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.mcp-checkbox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
+.server-checkbox {
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.server-checkbox:hover {
+    background: rgba(94, 129, 173, 0.15);
+}
+
+.mcptool-checkbox {
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 2px solid rgba(94, 129, 173, 0.3);
+}
+
+.mcptool-checkbox:hover {
+    background: rgba(94, 129, 173, 0.1);
+}
+
+.mcp-content {
+    position: relative;
+    min-height: 50px;
+    /* Allows flex items to shrink below content size */
+}
+
+.mcp-controls {
+    position: relative;
+    min-height: 50px;
+}
+
+.expand-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    color: rgba(94, 129, 173, 0.8);
+}
+
+.expand-btn:hover {
+    background: rgba(94, 129, 173, 0.2);
+}
+
+.mcp-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 20px;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(94, 129, 173, 0.2);
+    border-top: 2px solid rgba(94, 129, 173, 0.8);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.mcp-check {
+    position: relative;
+    display: block;
+    width: 42px;
+    height: 20px;
+}
+
+.mcp-name {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
+
+.mcptool-name {
+    color: rgba(var(--text-color), 0.9);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+    font-size: 12px;
+}
+
+.mcp-tools-count {
+    font-size: 11px;
+    color: rgba(var(--text-color), 0.6);
+    font-weight: 400;
+}
+
+.tools-dropdown {
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    gap: 2px;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(var(--border-color), 0.2);
+    animation: slideDown 0.2s ease-out;
+    max-height: 20vh;
+    overflow-y: scroll;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.selected-tools-summary {
+    width: 100%;
+    margin-top: 5px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(94, 129, 173, 0.1);
+    border: 1px solid rgba(94, 129, 173, 0.2);
+    max-height: 50vh;
+    overflow-y: scroll;
+}
+
+.summary-label {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: rgba(var(--text-color), 0.8);
+}
+
+.selected-tools-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.tool-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: rgba(94, 129, 173, 0.2);
+    border-radius: 12px;
+    font-size: 11px;
+    color: rgba(var(--text-color), 0.9);
+    max-width: 100%;
+    width: auto;
+    overflow: hidden;
+
+    span {
+        max-width: 95%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.remove-tool-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    color: rgba(var(--text-color), 0.6);
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.add-mcp-btn {
+    width: 100%;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.remove-tool-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(var(--text-color), 0.9);
+}
+
+/* Scrollbar styling */
+.selectmcp-btn-cont::-webkit-scrollbar {
+    width: 4px;
+}
+
+.selectmcp-btn-cont::-webkit-scrollbar-track {
+    background: rgba(var(--bg-color1), 0.1);
+    border-radius: 2px;
+}
+
+.selectmcp-btn-cont::-webkit-scrollbar-thumb {
+    background: rgba(94, 129, 173, 0.3);
+    border-radius: 2px;
+}
+
+.selectmcp-btn-cont::-webkit-scrollbar-thumb:hover {
+    background: rgba(94, 129, 173, 0.5);
+}
+
+
+html.dark .mcptool-checkbox {
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: rgba(94, 129, 173, 0.4);
+}
+
+html.light .mcptool-checkbox {
+    background: rgba(0, 0, 0, 0.05);
+    border-left-color: rgba(94, 129, 173, 0.6);
+}
+
+html.dark .selected-tools-summary {
+    background: rgba(94, 129, 173, 0.15);
+    border-color: rgba(94, 129, 173, 0.3);
+}
+
+html.light .selected-tools-summary {
+    background: rgba(94, 129, 173, 0.1);
+    border-color: rgba(94, 129, 173, 0.25);
+}
+
+html.dark .tool-tag {
+    background: rgba(94, 129, 173, 0.25);
+}
+
+html.light .tool-tag {
+    background: rgba(94, 129, 173, 0.2);
+}
+
+@media screen and (max-width: 500px) {
+    .selectmcp-btn-modal {
+        min-width: 100%;
+    }
+}

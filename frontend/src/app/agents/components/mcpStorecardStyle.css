@@ -1,0 +1,662 @@
+/* Enhanced MCP Store Card - Matching AgentCard.css Design */
+.mcp-card {
+    position: relative;
+    width: 320px;
+    border-radius: 40px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    min-height: 200px;
+    display: flex;
+    max-width: 320px;
+    flex-direction: column;
+    will-change: transform, box-shadow;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
+
+/* Enhanced floating accent elements */
+.card-accent-1,
+.card-accent-2 {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.3;
+    transition: all 0.6s ease;
+}
+
+.card-accent-1 {
+    width: 120px;
+    height: 120px;
+    top: -40px;
+    right: -40px;
+    background: radial-gradient(circle, rgba(var(--bg-color1), 0.15) 0%, transparent 70%);
+    filter: blur(1px);
+}
+
+.card-accent-2 {
+    width: 80px;
+    height: 80px;
+    bottom: -20px;
+    left: -20px;
+    background: radial-gradient(circle, rgba(var(--bg-color1), 0.1) 0%, transparent 70%);
+    filter: blur(0.5px);
+}
+
+.mcp-card:hover .card-accent-1 {
+    transform: scale(1.3) translate(-12px, 12px) rotate(45deg);
+    opacity: 0.5;
+}
+
+.mcp-card:hover .card-accent-2 {
+    transform: scale(1.2) translate(12px, -12px) rotate(-30deg);
+    opacity: 0.4;
+}
+
+/* Enhanced animated background pattern */
+.mcp-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 25% 25%, rgba(var(--bg-color1), 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(var(--bg-color1), 0.06) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(var(--bg-color1), 0.02) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.mcp-card:hover::before {
+    opacity: 1;
+}
+
+/* Light theme styles */
+html.light .mcp-card {
+    background: linear-gradient(135deg,
+            rgba(var(--bg-color1), 0.04) 0%,
+            rgba(var(--bg-color1), 0.02) 30%,
+            rgba(var(--bg-color1), 0.06) 70%,
+            rgba(var(--bg-color1), 0.08) 100%);
+    border-color: rgba(var(--bg-color1), 0.12);
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.03),
+        0 6px 20px rgba(0, 0, 0, 0.05),
+        0 3px 8px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+html.light .mcp-card:hover {
+    background: linear-gradient(135deg,
+            rgba(var(--bg-color1), 0.08) 0%,
+            rgba(var(--bg-color1), 0.03) 30%,
+            rgba(var(--bg-color1), 0.1) 70%,
+            rgba(var(--bg-color1), 0.12) 100%);
+    border-color: rgba(var(--bg-color1), 0.2);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.05),
+        0 12px 30px rgba(var(--bg-color1), 0.1),
+        0 6px 15px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: translateY(-6px) scale(1.02);
+}
+
+/* Dark theme styles */
+html.dark .mcp-card {
+    background: linear-gradient(135deg,
+            rgba(var(--bg-color1), 0.06) 0%,
+            rgba(var(--bg-color1), 0.03) 30%,
+            rgba(var(--bg-color1), 0.08) 70%,
+            rgba(var(--bg-color1), 0.1) 100%);
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.15),
+        0 6px 20px rgba(0, 0, 0, 0.25),
+        0 3px 8px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html.dark .mcp-card:hover {
+    background: linear-gradient(135deg,
+            rgba(var(--bg-color1), 0.1) 0%,
+            rgba(var(--bg-color1), 0.04) 30%,
+            rgba(var(--bg-color1), 0.12) 70%,
+            rgba(var(--bg-color1), 0.16) 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.25),
+        0 12px 30px rgba(var(--bg-color1), 0.12),
+        0 6px 15px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transform: translateY(-6px) scale(1.02);
+}
+
+/* Enhanced Card Header */
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+}
+
+.mcp-image-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.mcp-image {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 8px 25px rgba(var(--bg-color1), 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.4s ease;
+    flex-shrink: 0;
+    border: 2px solid rgba(var(--bg-color1), 0.25);
+}
+
+.image-glow {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 21px;
+    background: linear-gradient(135deg, rgba(var(--bg-color1), 0.6), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
+}
+
+.image-ring {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 21px;
+    background: linear-gradient(135deg, rgba(var(--bg-color1), 0.6), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
+}
+
+.mcp-card:hover .mcp-image {
+    transform: scale(1.08) rotate(3deg);
+    box-shadow:
+        0 12px 30px rgba(var(--bg-color1), 0.25),
+        0 6px 18px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    border-color: rgba(var(--bg-color1), 0.5);
+}
+
+.mcp-card:hover .image-glow {
+    opacity: 1;
+}
+
+.mcp-card:hover .image-ring {
+    opacity: 1;
+}
+
+.mcp-info {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.mcp-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    line-height: 1.2;
+    background: linear-gradient(135deg, currentColor 0%, rgba(var(--bg-color1), 1) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    word-wrap: break-word;
+    letter-spacing: -0.3px;
+    color: rgb(var(--bg-color1));
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+.mcp-handle {
+    font-size: 14px;
+    opacity: 0.75;
+    margin: 0;
+    font-weight: 500;
+    word-wrap: break-word;
+    color: rgba(var(--bg-color1), 0.8);
+    overflow-wrap: break-word;
+}
+
+/* Enhanced Description */
+.mcp-description {
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    opacity: 0.85;
+    font-weight: 400;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    position: relative;
+    z-index: 1;
+    text-align: justify;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 50px;
+}
+
+/* MCP Tools Section */
+.mcp-tools {
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.tools-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    opacity: 0.7;
+    margin-bottom: 8px;
+    letter-spacing: 0.8px;
+    color: rgba(var(--bg-color1), 0.8);
+}
+
+.tools-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.tool-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 12px;
+    background: rgba(var(--bg-color1), 0.1);
+    color: rgba(var(--bg-color1), 0.9);
+    border: 1px solid rgba(var(--bg-color1), 0.2);
+    transition: all 0.3s ease;
+    text-transform: lowercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tool-tag.more-tools {
+    background: rgba(var(--bg-color1), 0.15);
+    color: rgba(var(--bg-color1), 1);
+    font-weight: 600;
+    border-color: rgba(var(--bg-color1), 0.3);
+    max-width: none;
+}
+
+.mcp-card:hover .tool-tag {
+    background: rgba(var(--bg-color1), 0.15);
+    border-color: rgba(var(--bg-color1), 0.3);
+    transform: translateY(-1px);
+}
+
+.mcp-card:hover .tool-tag.more-tools {
+    background: rgba(var(--bg-color1), 0.2);
+    border-color: rgba(var(--bg-color1), 0.4);
+}
+
+/* Light theme tool tags */
+html.light .tool-tag {
+    background: rgba(var(--bg-color1), 0.08);
+    color: rgba(var(--bg-color1), 0.9);
+    border-color: rgba(var(--bg-color1), 0.15);
+}
+
+html.light .tool-tag.more-tools {
+    background: rgba(var(--bg-color1), 0.12);
+    border-color: rgba(var(--bg-color1), 0.25);
+}
+
+html.light .mcp-card:hover .tool-tag {
+    background: rgba(var(--bg-color1), 0.12);
+    border-color: rgba(var(--bg-color1), 0.25);
+}
+
+/* Dark theme tool tags */
+html.dark .tool-tag {
+    background: rgba(var(--bg-color1), 0.12);
+    color: rgba(var(--bg-color1), 0.95);
+    border-color: rgba(var(--bg-color1), 0.25);
+}
+
+html.dark .tool-tag.more-tools {
+    background: rgba(var(--bg-color1), 0.18);
+    border-color: rgba(var(--bg-color1), 0.35);
+}
+
+html.dark .mcp-card:hover .tool-tag {
+    background: rgba(var(--bg-color1), 0.18);
+    border-color: rgba(var(--bg-color1), 0.35);
+}
+
+/* Enhanced Footer */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+}
+
+.owner-info {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.owner-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    opacity: 0.7;
+    margin-bottom: 6px;
+    letter-spacing: 0.8px;
+    color: rgba(var(--bg-color1), 0.8);
+}
+
+.owner-name {
+    font-size: 14px;
+    font-weight: 600;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    color: rgba(var(--bg-color1), 0.9);
+}
+
+/* Price Label Styles */
+.card-price-container label {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    opacity: 0.7;
+    margin-bottom: 6px;
+    letter-spacing: 0.8px;
+    color: rgba(var(--bg-color1), 0.8);
+    display: block;
+}
+
+.card-price-tag {
+    padding: 5px 10px;
+    border-radius: 22px;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, rgb(var(--bg-color1)), rgba(var(--bg-color1), 0.85));
+    box-shadow: 0 8px 25px rgba(var(--bg-color1), 0.25);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.card-price-tag::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s;
+}
+
+.mcp-card:hover .card-price-tag::before {
+    left: 100%;
+}
+
+.mcp-card:hover .card-price-tag {
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 12px 35px rgba(var(--bg-color1), 0.35);
+}
+
+
+/* Reduce hover effects on touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .mcp-card:hover {
+        transform: translateY(-3px) scale(1.01);
+        box-shadow: 0 8px 20px rgba(var(--bg-color1), 0.1);
+    }
+
+    .mcp-card:hover .mcp-image {
+        transform: scale(1.03);
+        box-shadow: 0 6px 15px rgba(var(--bg-color1), 0.15);
+    }
+
+    .mcp-card:hover .card-price-tag {
+        transform: scale(1.03);
+        box-shadow: 0 6px 20px rgba(var(--bg-color1), 0.25);
+    }
+
+    .card-accent-1,
+    .card-accent-2 {
+        opacity: 0.2;
+    }
+
+    .mcp-card:hover .card-accent-1,
+    .mcp-card:hover .card-accent-2 {
+        transform: none;
+        opacity: 0.3;
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .mcp-card {
+        padding: 20px;
+        margin: 14px auto;
+        border-radius: 32px;
+        min-height: 180px;
+    }
+
+    .card-header {
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .mcp-image {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+    }
+
+    .mcp-name {
+        font-size: 18px;
+    }
+
+    .mcp-description {
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .card-footer {
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .card-price-tag {
+        padding: 8px 14px;
+        font-size: 13px;
+        align-self: flex-end;
+        margin-top: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mcp-card {
+        padding: 16px;
+        margin: 10px auto;
+        border-radius: 28px;
+        min-height: 160px;
+    }
+
+    .card-header {
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .mcp-image {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+    }
+
+    .mcp-name {
+        font-size: 17px;
+    }
+
+    .mcp-handle {
+        font-size: 13px;
+    }
+
+    .mcp-description {
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 16px;
+    }
+
+    .card-price-tag {
+        padding: 7px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Landscape mobile orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+    .mcp-card {
+        padding: 14px 18px;
+        min-height: 140px;
+    }
+
+    .card-header {
+        margin-bottom: 12px;
+    }
+
+    .mcp-description {
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+}
+
+/* Accessibility & Performance */
+@media (prefers-reduced-motion: reduce) {
+
+    .mcp-card,
+    .mcp-image,
+    .card-price-tag,
+    .card-accent-1,
+    .card-accent-2 {
+        transition: none;
+        animation: none;
+    }
+
+    .mcp-card:hover {
+        transform: none;
+    }
+
+    .mcp-card:hover .card-price-tag {
+        transform: none;
+    }
+
+    .mcp-card:hover .mcp-image {
+        transform: none;
+    }
+
+    .card-price-tag::before {
+        display: none;
+    }
+
+    .mcp-card::before {
+        display: none;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .mcp-card {
+        border-width: 2px;
+    }
+
+    html.light .mcp-card {
+        border-color: rgba(var(--bg-color1), 0.4);
+    }
+
+    html.dark .mcp-card {
+        border-color: rgba(var(--bg-color1), 0.6);
+    }
+
+    .card-price-tag {
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* Print styles */
+@media print {
+    .mcp-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ccc;
+        background: white !important;
+        transform: none !important;
+        min-height: auto;
+        margin-bottom: 1rem;
+    }
+
+    .card-accent-1,
+    .card-accent-2,
+    .image-glow,
+    .image-ring {
+        display: none;
+    }
+
+    .card-price-tag {
+        background: #333 !important;
+        color: white !important;
+        box-shadow: none;
+    }
+
+    .mcp-card::before {
+        display: none;
+    }
+
+    .card-price-tag::before {
+        display: none;
+    }
+}

@@ -7,6 +7,7 @@ import { useAuth } from "../hooks/useAuth";
 import { v7 as uuidv7 } from 'uuid'
 import { getMediaSupportByModelName } from "../../utils/models";
 import { useAlert } from "./alertContext";
+import { useAccount } from "wagmi";
 
 
 interface ChatContextType {
@@ -131,7 +132,7 @@ const AgentProvider = ({ children }: { children: React.ReactNode }) => {
     )
 }
 const McpServerProvider = ({ children }: { children: React.ReactNode }) => {
-
+    const account = useAccount()
     const [mcpServers, setMcpServers] = useState<MCPServerInfo[]>([]);
     const [mcpResources, setMcpResources] = useState<McpResource[]>([]);
     const [mcpResource, selectMcpResource] = useState<McpResource>();
@@ -144,13 +145,13 @@ const McpServerProvider = ({ children }: { children: React.ReactNode }) => {
                 console.error("User unauthenticated");
                 return;
             }
-            if (!user?.uid) {
+            if (!account.address) {
                 console.error("User UID is missing");
                 return;
             }
 
             try {
-                const serverResult = await axios.get(`${process.env.NEXT_PUBLIC_API_URI}/v1/servers?uid=${user.uid}`, { withCredentials: true })
+                const serverResult = await axios.get(`${process.env.NEXT_PUBLIC_API_URI}/v1/agents?address=${account.address}`, { withCredentials: true })
 
                     ;
                 // //console.log(userResult, serverResult)

@@ -2,14 +2,14 @@ import { Request, Response } from 'express';
 
 export const getServerById = async (req: Request, res: Response): Promise<void> => {
     const db = req.app.locals.db;
-    const { uid, sid } = req.query;
+    const { address, sid } = req.query;
     // console.log(uid, sid)
 
     try {
         const mcp_servers = db.collection('mcp_servers');
-        if (uid) {
+        if (address) {
             const mcp = await mcp_servers
-                .find({ uid })
+                .find({ address })
                 .toArray();
 
             //console.log(mcp)
